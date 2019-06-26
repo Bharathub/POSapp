@@ -24,7 +24,7 @@ class _UOMpopupState extends State<UOMpopup>
   @override
   Widget build(BuildContext context) {
     var bloc = Provider.of(context);
-    print('UOM CODE: ' +  widget.lkupCode.toString() + ' is the CODE');
+    //print('UOM CODE: ' +  widget.lkupCode.toString() + ' is the CODE');
     isInEditMode = (widget.lkupCode != "");
     //if(isInEditMode) { bloc.setUOMDtls(widget.lkupCode, widget.desc);}
     
@@ -99,7 +99,7 @@ class _UOMpopupState extends State<UOMpopup>
       builder: (context, snapshot) 
       { 
           _controller.value = _controller.value.copyWith(text: snapshot.data);
-          print('UOM ' + snapshot.data.toString());
+          //print('UOM ' + snapshot.data.toString());
           return TextField(
             textCapitalization: TextCapitalization.characters,
             // style: txtRoboStyle(20),

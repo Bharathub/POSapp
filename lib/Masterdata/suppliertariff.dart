@@ -36,8 +36,7 @@ class _ListCardsState extends State<SupplierCards>
             onPressed: () {Navigator.push(context,MaterialPageRoute(builder: (context) => MasterDataTab(loginInfo: widget.loginInfo,)));},
             ),
         ),
-        body: Container(
-          child: listTile(bloc,widget.loginInfo),
+        body: Container(child: listTile(bloc,widget.loginInfo),
         ),
         floatingActionButton: FloatingActionButton(
           heroTag: 'btn2',

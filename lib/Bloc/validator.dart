@@ -13,6 +13,8 @@ import 'package:split/src/Models/salesEntryModel.dart';
 import 'package:split/src/Models/suppliermodel.dart';
 import 'package:split/src/Models/productcategorymodel.dart';
 import 'package:split/src/Models/currencyModel.dart';
+import 'package:split/src/Models/dashBoardModel.dart';
+
 
   // common validators
   final validatedropDown = StreamTransformer<String,String>.fromHandlers(
@@ -28,17 +30,23 @@ import 'package:split/src/Models/currencyModel.dart';
         
         }
   });
+
   final validateTxtFld = StreamTransformer<String,String>.fromHandlers(
       handleData: (txtFld, sink) {
-        if (txtFld.isNotEmpty) 
-          {
+        // if (txtFld.isNotEmpty) 
+        //   {
             sink.add(txtFld);
-          }
-          else
-          {
-            sink.addError('Enter data.');
-          }
+          // }
+          // else
+          // {
+          //   sink.addError('Enter data.');
+          // }
   });
+
+  final isSelectedValidator = StreamTransformer<bool,bool>.fromHandlers(
+    handleData: (chkBox, sink)
+    { sink.add(chkBox);}
+  );
 
     var validateTxtFldCreditTerm = StreamTransformer<String,String>.fromHandlers(
     handleData: (txtFld, sink) {
@@ -103,6 +111,15 @@ class Validators {
     }
 
   );
+
+  var showPwdValidator = StreamTransformer<bool,bool>.fromHandlers(
+  handleData: (showPwd,sink){
+    // if(email.contains('')){
+      sink.add(showPwd);
+    // }else{sink.addError('Email is not valid');}
+  }
+
+);
 
   var passwordlValidator = StreamTransformer<String,String>.fromHandlers(
     handleData: (password,sink){
@@ -372,7 +389,7 @@ class Validators {
   });
 
         // Validating Inquiry details Screen
-  final inqsaveDtlsValidators = StreamTransformer<List<InquiryModel>, List<InquiryModel>>.fromHandlers(
+  final inqsaveDtlsValidators = StreamTransformer<List<StockInquiry>, List<StockInquiry>>.fromHandlers(
   handleData: (inqdtls, sink) {
     // if (inqdtls.isNotEmpty) 
       {
@@ -400,6 +417,16 @@ class Validators {
     }
 
   );
+  
+  var validateQuotationHd = StreamTransformer<List<QuotationHd>, List<QuotationHd>>.fromHandlers(
+      handleData: (quotHdList,sink){
+        // if(quotHdList.length>0)
+        { sink.add(quotHdList); }
+        // else
+        // { sink.addError(''); }
+      }
+  );
+
 
   // Quotation standard details
   var qoStdDtlsValidators = StreamTransformer<List<QuotationItems>, List<QuotationItems>>.fromHandlers(
@@ -436,6 +463,15 @@ class Validators {
       // { sink.addError(''); }
     }
   );
+  //dashboard
+   var dashBoardValidators = StreamTransformer<DashBoards,DashBoards>.fromHandlers(
+    handleData: (dashBoard,sink){
+      // if(dashBoard.length>0)
+      { sink.add(dashBoard); }
+      // else
+      // { sink.addError(''); }
+    }
+  );
 
   var seHeaderValidators = StreamTransformer<SalesEntryHd, SalesEntryHd>.fromHandlers(
       handleData: (goodsReceiver,sink){
@@ -450,5 +486,28 @@ class Validators {
     }
   );
   
+     var unBilledInvValidator = StreamTransformer<List<UnBilledInvoice>, List<UnBilledInvoice>>.fromHandlers(
+    handleData: (unBilledInv,sink)
+    {
+      { sink.add(unBilledInv); }
+    }
+  );
+
+       var cusInvDtlsValidator = StreamTransformer<List<CustomerInvDts>, List<CustomerInvDts>>.fromHandlers(
+    handleData: (unBilledInv,sink)
+    {
+      { sink.add(unBilledInv); }
+    }
+  );
+
+  
+
+   
+     var stockInqValidator = StreamTransformer<List<StockInquiry>, List<StockInquiry>>.fromHandlers(
+    handleData: (unBilledInv,sink)
+    {
+      { sink.add(unBilledInv); }
+    }
+  );
   
 }

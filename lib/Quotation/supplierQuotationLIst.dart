@@ -3,11 +3,9 @@ import 'package:split/Bloc/Bloc.dart';
 import 'package:split/Bloc/provider.dart';
 import 'package:split/Quotation/supplierquetationtariff.dart';
 import 'package:split/src/APIprovider/quotationApiProvider.dart';
-//import 'package:split/src/Models/customermodel.dart';
 import 'package:split/src/Models/loginmodel.dart';
 import 'package:split/Bloc/CommonVariables.dart';
 import 'package:intl/intl.dart';
-//import 'package:split/src/Models/productModel.dart';
 
 class SupplierQuotationList extends StatefulWidget {
 
@@ -26,7 +24,7 @@ class _CustomerQuotationListState extends State<SupplierQuotationList>
     var bloc = Provider.of(context);
     
     return Scaffold(
-      body: Container(child: listTile(bloc, widget.loginInfo),),
+      body: Container(height: 550.0, child: listTile(bloc, widget.loginInfo),),
       floatingActionButton: FloatingActionButton( heroTag: 'Supplier',
       backgroundColor:  Color(0xffd35400),
       child: Icon(Icons.add),
@@ -48,7 +46,7 @@ Widget listTile(Bloc bloc, Users loginInfo)
           return ListView.builder(
           itemCount: ssQut.data.length,
           itemBuilder: (context, index) {
-          return Container(height: 100.0,padding: EdgeInsets.only(top:15.0),
+          return Container(height: 110.0,padding: EdgeInsets.only(top:15.0),
           child: Card( 
           margin: EdgeInsets.only(right: 5.0, left: 5.0),
           elevation: 10.0,
@@ -63,22 +61,7 @@ Widget listTile(Bloc bloc, Users loginInfo)
                     SuppliertariffQuotation(loginInfo: loginInfo, quotNo: ssQut.data[index].quotationNo)));},
           trailing: Column(
             children: <Widget>[
-            Text(ssQut.data[index].status ? "ACTIVE" : 'DELETED',style: TextStyle(color: Colors.red),),
-            SizedBox.shrink(child: IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: ()async
-              {
-                QuotationApiProvider quotApi = new QuotationApiProvider();
-                await (quotApi.delQuotList(loginInfo.userID,ssQut.data[index].branchId,ssQut.data[index].quotationNo)).then((onValue)
-                      {
-                        if(onValue == true){
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=> SupplierQuotationList(loginInfo: loginInfo,)));
-                        }else {return  Exception('Loading Failed');}
-                      }
-                    );
-              } 
-            )
-          ),
+            Text(ssQut.data[index].status ? "ACTIVE" : 'DELETED',style: ssQut.data[index].status ? TextStyle(color: Colors.red) : TextStyle(color: Colors.green)),
         ],), 
           subtitle: Container(
           child: Align(
@@ -102,11 +85,22 @@ Widget listTile(Bloc bloc, Users loginInfo)
                   Expanded(flex: 5,child: Text('Expiry Date:')),
                   // SizedBox(width: 10.0,),
                   Expanded(flex: 5,child: Text(DateFormat('dd/MM/yyyy').format(ssQut.data[index].expiryDate).toString()),),
+                  Expanded(flex:0,
+                  child:  IconButton(               
+                  icon: ssQut.data[index].status ? Icon(Icons.delete) : Container(),
+                  onPressed: ()async
+                  {
+                    QuotationApiProvider quotApi = new QuotationApiProvider();
+                    await (quotApi.delQuotList(loginInfo.userID,ssQut.data[index].branchId,ssQut.data[index].quotationNo)).then((onValue)
+                          {
+                            if(onValue == true){
+                            Navigator.push(context, MaterialPageRoute(builder: (context)=> SupplierQuotationList(loginInfo: loginInfo,)));
+                            }else {return  Exception('Loading Failed');}
+                          }
+                        );
+                  } 
+            ),)
                ],),
-              
-               
-                  // SizedBox(width: 300,child:  Text('EffectiveDate:' + ssQut.data[index].effectiveDate.toString()),),
-                  // SizedBox(width: 300,child:  Text('ExpiryDate: ' + ssQut.data[index].expiryDate.toString()),),
                             ],)),)),));}
               );
         } else {

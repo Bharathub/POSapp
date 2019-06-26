@@ -173,6 +173,7 @@ class SalesEntryDetails {
     String uom;
     String orderNo;
     int itemNo;
+    String parentProductCode;
     String productCode;
     String productDescription;
     String barCode;
@@ -189,10 +190,12 @@ class SalesEntryDetails {
     double discountAmount;
     double adjustAmount;
     double partialPayment;
+    double totAmount;
     dynamic photo;
     String location;
     String locationDescription;
     int recordStatus;
+    bool status;
     // dynamic productImageString;
     // dynamic productsList;
     // dynamic discountTypeList;
@@ -201,6 +204,7 @@ class SalesEntryDetails {
         this.uom,
         this.orderNo,
         this.itemNo,
+        this.parentProductCode,
         this.productCode,
         this.productDescription,
         this.barCode,
@@ -217,10 +221,12 @@ class SalesEntryDetails {
         this.discountAmount,
         this.adjustAmount,
         this.partialPayment,
+        this.totAmount,
         this.photo,
         this.location,
         this.locationDescription,
         this.recordStatus,
+        this.status,
         // this.productImageString,
         // this.productsList,
         // this.discountTypeList,
@@ -230,6 +236,7 @@ class SalesEntryDetails {
         uom: json["UOM"],
         orderNo: json["OrderNo"],
         itemNo: int.parse(json["ItemNo"].toString()),
+        parentProductCode: json["ParentProduct"],
         productCode: json["ProductCode"],
         productDescription: json["ProductDescription"],
         barCode: json["BarCode"],
@@ -250,6 +257,7 @@ class SalesEntryDetails {
         location: json["Location"],
         locationDescription: json["LocationDescription"],
         recordStatus: json["RecordStatus"],
+        status: json["Status"]
         // productImageString: json["ProductImageString"],
         // productsList: json["ProductsList"],
         // discountTypeList: json["DiscountTypeList"],
@@ -259,12 +267,13 @@ class SalesEntryDetails {
         "UOM": uom,
         "OrderNo": orderNo,
         "ItemNo": itemNo,
+        "parentProductCode": parentProductCode,
         "ProductCode": productCode,
         "ProductDescription": productDescription,
         "BarCode": barCode,
         "Quantity": quantity,
         "Cost": cost,
-        "SellRate": sellRate,
+        "SellRate": sellRate.toString(),
         "SellPrice": sellPrice,
         "MatchQuotation": matchQuotation,
         "CreatedBy": createdBy,
@@ -279,6 +288,7 @@ class SalesEntryDetails {
         "Location": location,
         "LocationDescription": locationDescription,
         "RecordStatus": recordStatus,
+        "Status": status,
         // "ProductImageString": productImageString,
         // "ProductsList": productsList,
         // "DiscountTypeList": discountTypeList,

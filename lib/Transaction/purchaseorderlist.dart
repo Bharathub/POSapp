@@ -38,7 +38,7 @@ class _ListCardsState extends State<PurchaseOrderList>
         Navigator.push(context, MaterialPageRoute(builder: (context)=> PurchaseOrder(loginInfo: widget.loginInfo,)));},
         ),
       ); 
-}
+  }
 
   Widget listTile(Bloc bloc) 
   {
@@ -52,10 +52,10 @@ class _ListCardsState extends State<PurchaseOrderList>
           itemCount: sspo.data.length,
           itemBuilder: (context, index)
          {
-          return Container(height: 100.0,padding: EdgeInsets.only(top:15.0),
+          return Container(height: 110.0, padding: EdgeInsets.only(top:10.0),
           child: Card( 
           margin: EdgeInsets.only(right: 5.0, left: 5.0),
-          elevation: 10.0,
+          elevation: 5.0,
           child: ListTile(
             title:Row(children: <Widget>[
               Expanded(flex: 5,child: Text('PO No.:')),
@@ -68,27 +68,12 @@ class _ListCardsState extends State<PurchaseOrderList>
                   trailing:
                   //  Column(
                   //   children: <Widget>[
-                      Text(sspo.data[index].isCancel ? "DELETED" : 'ACTIVE',style: TextStyle(color: Colors.red),),
-                      // SizedBox.shrink(child: IconButton(
-                      //   icon:  Icon(Icons.delete),
-                      //   onPressed: () 
-                      //   async {
-                      //     PurchaseOrederApi poApi = new PurchaseOrederApi();
-                      //     await (poApi.delPoList(sspo.data[index].branchId,sspo.data[index].poNo,widget.loginInfo.userID)).then((onValue)
-                      //     {
-                      //       if(onValue == true){
-                      //       Navigator.push(context, MaterialPageRoute(builder: (context)=> PurchaseOrderList(loginInfo: widget.loginInfo,)));
-                      //       }else {return  Exception('Loading Failed');}
-                      //     }
-                      //   );
-                      // },) ),
-                  //   ],
-                  // ),
+                  Text(sspo.data[index].isCancel ? "DELETED" : 'ACTIVE',style:sspo.data[index].isCancel ? TextStyle(color: Colors.red): TextStyle(color: Colors.green),),                                     
                   subtitle: Container(
                   child: Align(
                   alignment: Alignment.topLeft,
                   child: Column(
-                  children: <Widget>[
+                  children: <Widget>[                    
                     Row(
                       children: <Widget>[
                         Expanded(flex: 5,child: Text('PO Date.:')),
@@ -96,22 +81,26 @@ class _ListCardsState extends State<PurchaseOrderList>
                         Expanded(flex: 5,child: Text(DateFormat('dd/MM/yyyy').format(sspo.data[index].poDate).toString(),),)
                     ],),
                     Row(children: <Widget>[
-                      Expanded(flex: 5,child: Text('Customer Name:')),
+                      Expanded(flex: 5,child: Text('Supplier Name:')),
                       Expanded(flex: 5,child: Text(sspo.data[index].supplierName),),
-                      Expanded(flex: 1,child:  IconButton(
-                        icon:  Icon(Icons.delete),
-                        onPressed: () 
-                        async {
-                          print('DELETED PO ACTIVATED....');
-                          PurchaseOrederApi poApi = new PurchaseOrederApi();
-                          await (poApi.delPoList(sspo.data[index].branchId,sspo.data[index].poNo,widget.loginInfo.userID)).then((onValue)
-                          {
-                            if(onValue == true){
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=> PurchaseOrderList(loginInfo: widget.loginInfo,)));
-                            }else {return  Exception('Loading Failed');}
-                          }
-                        );
-                      },
+                    ]),
+                    Row(children: <Widget>[
+                      Expanded(flex: 5,child: Text('PO Amount:')),
+                      Expanded(flex: 4,child: Text(sspo.data[index].netAmount.toString()),),
+                      Expanded(flex: 1,child: IconButton(
+                        icon: sspo.data[index].isCancel ? Container() :  Icon(Icons.delete),
+                          onPressed: () 
+                          async {
+                            // print('DELETED PO ACTIVATED....');
+                            PurchaseOrederApi poApi = new PurchaseOrederApi();
+                            await (poApi.delPoList(sspo.data[index].branchId,sspo.data[index].poNo,widget.loginInfo.userID)).then((onValue) 
+                              {
+                                if(onValue == true){
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> PurchaseOrderList(loginInfo: widget.loginInfo,)));
+                                } else {return  Exception('Loading Failed');}
+                              }
+                            );
+                          },
                       ) ),
                       ],
                     ),
@@ -123,9 +112,8 @@ class _ListCardsState extends State<PurchaseOrderList>
           )
           );
         }
-                        );
-          } else {return Center(child: CircularProgressIndicator(),);}
-        });
+        );
+      } else {return Center(child: CircularProgressIndicator(),);}
+      });
     }
-
   }

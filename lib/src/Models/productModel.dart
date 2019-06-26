@@ -7,7 +7,7 @@ class Product {
     String uom;
     String size;
     String color;
-    // int currentQty;
+    double currentQty;
     bool status;
     String createdBy;
     String createdOn;
@@ -18,8 +18,8 @@ class Product {
     String locationDescription;
     String productCategoryDescription;
     String uomDescription;
-    // int buyingPrice;
-    // int sellingPrice;
+    double buyingPrice;
+    double sellingPrice;
     // dynamic productCategoryList;
     // dynamic uomList;
     // dynamic locationList;
@@ -33,7 +33,7 @@ class Product {
         this.uom,
         this.size,
         this.color,
-        // this.currentQty,
+        this.currentQty,
         this.status,
         this.createdBy,
         this.createdOn,
@@ -44,8 +44,8 @@ class Product {
         this.locationDescription,
         this.productCategoryDescription,
         this.uomDescription,
-        // this.buyingPrice,
-        // this.sellingPrice,
+         this.buyingPrice,
+        this.sellingPrice,
         // this.productCategoryList,
         // this.uomList,
         // this.locationList,
@@ -60,7 +60,7 @@ class Product {
         uom: json["UOM"],
         size: json["Size"],
         color: json["Color"],
-        // currentQty: json["CurrentQty"],
+        currentQty:double.parse(json["CurrentQty"].toString()),
         status: json["Status"],
         createdBy: json["CreatedBy"],
         createdOn: json["CreatedOn"],
@@ -71,8 +71,8 @@ class Product {
         locationDescription: json["LocationDescription"],
         productCategoryDescription: json["ProductCategoryDescription"],
         uomDescription: json["UOMDescription"],
-        // buyingPrice: json["BuyingPrice"],
-        // sellingPrice: json["SellingPrice"],
+        buyingPrice:double.parse(json["BuyingPrice"].toString()),
+        sellingPrice: double.parse(json["SellingPrice"].toString()),
 
         // productCategoryList: json["ProductCategoryList"],
         // uomList: json["UOMList"],
@@ -88,7 +88,7 @@ class Product {
         "UOM": uom,
         "Size": size,
         "Color": color,
-        // "CurrentQty": currentQty,
+        "CurrentQty": currentQty,
         "Status": status,
         "CreatedBy": createdBy,
         "CreatedOn": createdOn,
@@ -99,8 +99,8 @@ class Product {
         "LocationDescription": locationDescription,
         "ProductCategoryDescription": productCategoryDescription,
         "UOMDescription": uomDescription,
-    //     "BuyingPrice": buyingPrice,
-    //     "SellingPrice": sellingPrice,
+        "BuyingPrice": buyingPrice,
+        "SellingPrice": sellingPrice,
     //     "ProductCategoryList": productCategoryList,
     //     "UOMList": uomList,
     //     "LocationList": locationList,

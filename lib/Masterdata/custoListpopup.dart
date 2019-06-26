@@ -30,7 +30,7 @@ class _CustomerPopupState extends State<CustomerListPopup>
     // if(isInEditMode) 
     // { 
       intCount = intCount+1; //print('Customer --> Times Executed: ' + intCount.toString()); 
-      if(intCount==1) {bloc.initiateCountrys(); bloc.fetchCustomer(widget.cusCode);}
+      if(intCount==1) {bloc.initiateCountrys(true); bloc.fetchCustomer(widget.cusCode);}
       //if(intCount==1) { bloc.fetchCustomer(widget.cusCode,widget.cusName, widget.regNo);}
     //}
 

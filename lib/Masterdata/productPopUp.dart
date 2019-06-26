@@ -34,9 +34,9 @@ class _ProductpopupState extends State<Productpopup>
     //if(isInEditMode) // If old record Editing
     { intCount = intCount+1; print('EDIT MODE:-> No Of Times Executed: ' + intCount.toString()); 
       if(intCount==1) 
-      { bloc.initiateUOMs(); 
-        bloc.initiateProdCategorys(); 
-        bloc.initiateLocation();
+      { bloc.initiateUOMs(true); 
+        bloc.initiateProdCategorys(true); 
+        bloc.initiateLocation(true);
         bloc.fetchProdutDtls(widget.prodCode); }}
     //else {print('In Add MODE' + widget.prodCode); bloc.clearProductDtls();}  // If new record
 

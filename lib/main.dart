@@ -1,5 +1,8 @@
+//import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
+//import 'package:intl/intl.dart';
 import 'package:split/Bloc/Bloc.dart';
+import 'package:split/Bloc/CommonVariables.dart';
 import 'package:split/appdrawer.dart';
 import 'package:split/src/Models/loginmodel.dart';
 import 'package:split/Bloc/provider.dart';
@@ -12,26 +15,14 @@ class MyApp extends StatelessWidget {
   build(context) 
   {
     return Provider(
-      child: MaterialApp(
-      title: 'Login me In!',
-      home: Scaffold(
-        //body: LoginScreen()
-        body: MyHomePage()
-        //body: TabsViewBar(),
-        //body: PregateIn(),
+     child: MaterialApp(
+      debugShowCheckedModeBanner: false,       
+      home: Scaffold(       
+      body: MyHomePage()
       ),
-    )
+     )
     );
   }
-  
-  // build(context ) {
-  //   Provider()
-  //   return new MaterialApp(
-  //     debugShowCheckedModeBanner: false,
-  //     home: new MyHomePage(),
-
-  //     );
-  // }
 }
 
 class MyHomePage extends StatefulWidget
@@ -41,17 +32,18 @@ class MyHomePage extends StatefulWidget
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  // bool _obscureText = false;
+  
 
   //  final MyHomePage homePage;
   LoginUserInfo message = new LoginUserInfo();
   LoginApi loginApi = new LoginApi();
-  // nextpage(BuildContext context){
-  // }
-   //final bloc = Bloc();
+
  @override
   Widget build(BuildContext context){
     var bloc = Provider.of(context);
-    return new Scaffold(
+    bloc.showPassword(true); 
+    return new Scaffold(      
       body: new SingleChildScrollView(
       child: Column(children: <Widget>[
       Container(child:Column(
@@ -82,26 +74,27 @@ class _MyHomePageState extends State<MyHomePage> {
       Container(
       child: Column(
       children: <Widget>[
+      //dateDisplayFld(bloc),
       txtField(bloc),
       pwdField(bloc),
       SizedBox(
       height: 20.0,),
 
-    Container(
-      alignment: Alignment(1.0, 0.0),
-      padding: EdgeInsets.only(top: 15.0, left: 20.0),
-      child: InkWell(
-      onTap: () {},
-      child: Text(
-      'Forgot Password',
-      style: TextStyle(
-      color: Colors.green,
-      fontWeight: FontWeight.bold,
-      fontFamily: 'Montserrat',
-      decoration: TextDecoration.underline),
-        ),
-      ),
-    ),
+    // Container(
+    //   alignment: Alignment(1.0, 0.0),
+    //   padding: EdgeInsets.only(top: 15.0, left: 20.0),
+    //   child: InkWell(
+    //   onTap: () {},
+    //   child: Text(
+    //   'Forgot Password',
+    //   style: TextStyle(
+    //   color: Colors.green,
+    //   fontWeight: FontWeight.bold,
+    //   fontFamily: 'Montserrat',
+    //   decoration: TextDecoration.underline),
+    //     ),
+    //   ),
+    // ),
     SizedBox( height: 50.0, width: 100.0,),
     StreamBuilder<bool>(stream: bloc.submitCheck,  builder:(context,snapshot)=> ButtonTheme(
       minWidth: 600.0,
@@ -110,17 +103,17 @@ class _MyHomePageState extends State<MyHomePage> {
       onPressed: () async {
         Users loginuser = new Users();
         loginuser = bloc.getLoginUser();
-      await  loginApi.checkUserLogin(loginuser).then((onValue){
-      if(onValue == true){
-      Navigator.push(context,
-      MaterialPageRoute(builder: (context) => AppDrawer(loginInfo: loginuser)));
-      } else {  return Exception('Login Failed');} });
+        await  loginApi.checkUserLogin(loginuser).then((onValue){
+        if(onValue == true){
+        Navigator.push(context,
+        MaterialPageRoute(builder: (context) => AppDrawer(loginInfo: loginuser)));
+        } else {  StaticsVar.showAlert(context, "Invalid User Id / Password");} });
       },
-        textColor: Colors.white,
-        color: Color(0xffd35400),
-        padding: const EdgeInsets.all(8.0),
-        child: new Text('Login'),
-          ), ),
+      textColor: Colors.white,
+      color: Color(0xffd35400),
+      padding: const EdgeInsets.all(8.0),
+      child: new Text('Login'),
+      ), ),
     )
   ],
   ),
@@ -131,8 +124,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
-}
 
+  
   txtStyle(double txtSize, Color txtColor) {
     return TextStyle(
       fontSize: txtSize,
@@ -145,36 +138,77 @@ class _MyHomePageState extends State<MyHomePage> {
   txtField(Bloc bloc)
   {
     return StreamBuilder<String>(
-      stream: bloc.email,builder:(context,snapshot)=>
+      stream: bloc.email,
+      builder:(context,snapshot)=>
       TextField(
-      onChanged: bloc.emailChanged,
-      decoration: InputDecoration(
-      errorText: snapshot.error,
-      labelText: 'Email',
-      labelStyle: TextStyle(
-      fontFamily: 'Montserrat',
-      fontWeight: FontWeight.bold,
-      color: Colors.grey),
-      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.green)),),),);
+        onChanged: bloc.emailChanged,
+        decoration: InputDecoration(
+          errorText: snapshot.error,
+          labelText: 'Email',
+          suffixIcon: Icon(Icons.email),
+          labelStyle: TextStyle(
+            fontFamily: 'Montserrat',
+            fontWeight: FontWeight.bold,
+            color: Colors.grey),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.green)),
+        ),
+      ),
+    );
   }
 
   pwdField(Bloc bloc) 
-  {
+  {    
     return StreamBuilder<String>(
-      stream: bloc.password,  builder:(context,snapshot)=>
-      TextField(
-      onChanged: bloc.passwordChanged,
-      obscureText: true,
-      decoration: InputDecoration(
-      errorText: snapshot.error,
-      labelText: 'Password',
-      labelStyle: TextStyle(
-      fontFamily: 'Montserrat',
-      fontWeight: FontWeight.bold,
-      color: Colors.grey),
-      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.green)),),),);
+      stream: bloc.password,  
+      builder:(context,snapshot)
+      {
+        return StreamBuilder(
+          stream: bloc.showPwd, 
+          builder:(context,ssShowPwd)
+          {        
+            return TextField(
+              onChanged: bloc.passwordChanged,
+              obscureText: ssShowPwd.data == null ? true : ssShowPwd.data,      
+              decoration: InputDecoration
+              (
+                //errorText: snapshot.error,
+                labelText: 'Password',
+                suffixIcon: IconButton(icon: Icon(ssShowPwd.data == null ? Icons.visibility_off : (ssShowPwd.data ? Icons.visibility_off : Icons.visibility)), onPressed: (){
+                  bloc.showPassword(ssShowPwd.data == null ? false : !ssShowPwd.data);        
+                },),                      
+                labelStyle: TextStyle(
+                fontFamily: 'Montserrat',
+                fontWeight: FontWeight.bold,
+                color: Colors.grey),
+                focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.green)),
+              ),
+            );
+          });
+        }
+      );
   }
 
   lblField(String lblTxt, double txtSize, Color txtColor){
     return Text(lblTxt, style: txtStyle(txtSize, txtColor));
-    }
+  }
+
+  // dateDisplayFld(Bloc bloc)
+  // {
+  //   return StreamBuilder(
+  //     stream: bloc.unBilldDateFrom,
+  //     builder: (context, ssDate)
+  //     {
+  //       return DateTimePickerFormField(
+  //         format: DateFormat('dd-MM-yyyy'),
+  //         //dateOnly: true,
+  //         decoration: const InputDecoration(
+  //           labelText: "Testing Date",
+  //         ),
+  //         onChanged: bloc.unBilldDateFormChanged,
+  //       );
+  //     }
+  //   );
+  // }
+
+}

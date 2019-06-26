@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' as prefix0;
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:split/Bloc/Bloc.dart';
@@ -37,16 +39,20 @@ class _PurchaseOrder extends State<PurchaseOrder>
     //   { 
       intCount = intCount+1; print('No Of Times Executed: ' + intCount.toString()); 
       if(intCount==1) {
-        bloc.initiateSuppliers();
-        bloc.initiatePaymentType();
-        bloc.initiateProducts();
-        bloc.initiateUOMs();
-        bloc.initiateCurrencys();
+        bloc.initiateSuppliers(true);
+        bloc.initiatePaymentType(true);
+        bloc.initiateProducts(true);
+        bloc.initiateUOMs(true);
+        bloc.initiateCurrencys(true);
+        bloc.poVatchecked();
+        bloc.fillPOContactPersonNAddrs();
         bloc.fetchPO(widget.poNum);}
       
     // }
     return MaterialApp(
-  
+      theme: ThemeData(
+        buttonColor: Color(0xffd35400),
+      ),
       home: Scaffold(
            appBar: AppBar(
             backgroundColor: Color(0xffd35400),
@@ -62,14 +68,15 @@ class _PurchaseOrder extends State<PurchaseOrder>
             child:Column(
               children: <Widget>[
                 // posupCodeTxtFld(bloc),
+                poNotxtFld(bloc),
                 poDateFld(bloc, !isInEditMode),
                 poSupplerDD(bloc),
-                Wrap(spacing: 10.0,
+                Wrap(spacing: 30.0,
                   children: <Widget>[
                     poContactPersonTxtFld(bloc),
                     poAddressFld(bloc),
                 ],),
-                Wrap(spacing: 10,
+                Wrap(spacing: 30,
                 children: <Widget>[
                 poShipmentDate(bloc),
                 poEstimatedDate(bloc),
@@ -78,17 +85,17 @@ class _PurchaseOrder extends State<PurchaseOrder>
                 
                 poRefNoFld(bloc),
                 poPaymentTerm(bloc),
-                Wrap(spacing: 10.0,
+                Wrap(spacing: 30.0,
                   children: <Widget>[
                     poPRNoFld(bloc),
                     poRemarkFld(bloc),
                 ],),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: <Widget>[
                   Text('Product Details',style: TextStyle(fontSize: 24.0),),
-                   seOKbtn(bloc,context,widget.products),
-                   ],),
+                   poAddbtn(bloc, context, widget.loginInfo, widget.poNum),
+                   ], ),
                
-                Container( height: 225.0,child: listTile(bloc,widget.products),),
+                Container( height: 225.0,child: listTile(bloc,widget.loginInfo,widget.poNum),),
                 //Divider(),
                 SizedBox(height: 15.0,),
                 // orederBtn(context,bloc,widget.loginInfo,widget.poNum),
@@ -97,38 +104,41 @@ class _PurchaseOrder extends State<PurchaseOrder>
         ),    
       ),
       // floatingActionButton: FloatingActionButton(backgroundColor:Color(0xffd35400),child: Icon(Icons.add),  
-      // onPressed: (){ _showDialog(context, bloc,widget.products);
+      // onPressed: (){ _showDialog(context, bloc);
       // //Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductDetails(loginInfo: widget.loginInfo,)));
       // },),
-      bottomNavigationBar:  orederBtn(context,bloc,widget.loginInfo,widget.poNum),
+      bottomNavigationBar: summaryBtn(context, bloc, widget.loginInfo, widget.poNum),
     ));
   }
 
 }
 
- seOKbtn(Bloc bloc,BuildContext context,List<Product> products)
+  poAddbtn(Bloc bloc,BuildContext context, Users loginInfo, String poNum)
   {
     return FlatButton(color: Color(0xffd35400),
       child: Text('Add',style: TextStyle(color: Colors.white),),
-      onPressed: (){ _showDialog(context, bloc,products);
-      
+      onPressed: (){ 
+        if(bloc.validateSupplierCode())
+        {
+        _showDialog(context, bloc, 'ADDDETAIL', loginInfo, poNum);
+        }else{StaticsVar.showAlert(context, 'Please Select Supplier');}
         },);
   }
 
-
-  dispProductDetails(BuildContext context, Bloc bloc, List<Product> products)
+  dispProductDetails(BuildContext context, Bloc bloc)
   {
     return  SingleChildScrollView(
       child: Container(
-      margin: EdgeInsets.only(top: 80.0, left: 10.0, right: 10.0),
+      margin: EdgeInsets.all(10.0),
       child: Center(
         child: Column(
           children: <Widget>[
-            poProductdownValue(bloc,products),
+            poProductdownValue(bloc),
             poUOMdownValue(bloc),
             poQtyTxtFld(bloc),
             poCurrencyPopup(bloc),
             poUnitPriceTxtFld(bloc),
+            SizedBox(height: 10.0,),
             saveProductCodeBtn(context, bloc),
             ],
           ),
@@ -140,9 +150,9 @@ class _PurchaseOrder extends State<PurchaseOrder>
 
 
 
-  poProductdownValue(Bloc bloc, List<Product> products)
+  poProductdownValue(Bloc bloc)
   {
-      bloc.initiateProducts();  
+      bloc.initiateProducts(false);  
       //ProductApiProvider wlApi = new ProductApiProvider();                   
       return StreamBuilder<String>(
         stream: bloc.poProdCodeDDpopupStream,
@@ -177,7 +187,7 @@ class _PurchaseOrder extends State<PurchaseOrder>
 
   poUOMdownValue(Bloc bloc)
   {
-      bloc.initiateUOMs();  
+      bloc.initiateUOMs(false);  
       // LookUpApiProvider wlApi = new LookUpApiProvider();
       //LookUpApiProvider proApi = LookUpApiProvider();
                           
@@ -233,7 +243,7 @@ class _PurchaseOrder extends State<PurchaseOrder>
 
   poCurrencyPopup(Bloc bloc)
   {
-      bloc.initiateCurrencys();
+      bloc.initiateCurrencys(false);
     //CurrencyApiProvider wlApi = new CurrencyApiProvider();
       //LookUpApiProvider proApi = LookUpApiProvider();
                           
@@ -298,11 +308,11 @@ class _PurchaseOrder extends State<PurchaseOrder>
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
             FlatButton(child: Text('CANCEL',style: TextStyle(color: Colors.blue),),
-              onPressed: () { Navigator.of(context).pop();},),
+              onPressed: () { Navigator.of(context).pop(); bloc.clearDisplay4PO();},),
             FlatButton( child: Text( 'SAVE', style: TextStyle(color: Colors.blue),),
             onPressed: ()
               {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop();                  
                 bloc.addPODetails();
                 bloc.clearDisplay4PO();
               }, 
@@ -314,7 +324,7 @@ class _PurchaseOrder extends State<PurchaseOrder>
   }
               
 
-  void _showDialog(BuildContext context, Bloc bloc, List<Product> products) {
+  void _showDialog(BuildContext context, Bloc bloc, String showScreen, Users loginInfo, String poNum) {
     // flutter defined function
     showDialog(
       context: context,
@@ -322,14 +332,17 @@ class _PurchaseOrder extends State<PurchaseOrder>
         // return object of type Dialog
         return SimpleDialog(children: <Widget>[ 
           //showRadioBtn(context),
-          showPopUpList(context, bloc,products),
+          showPopUpList(context, bloc, showScreen, loginInfo, poNum)
                  ],);
       },
     );
   }
 
-  Widget showPopUpList(BuildContext contxt, Bloc bloc, List<Product> products) {
-    return Container( width: 250, height: 500, 
+  Widget showPopUpList(BuildContext context, Bloc bloc, String showScreen, Users loginInfo, String poNum) {
+    double hgt = showScreen == 'ADDDETAIL' ? 390 : 260;
+    double wdt = showScreen == 'ADDDETAIL' ? 300 : 300;
+
+    return Container( width: wdt, height: hgt, 
         // decoration: BoxDecoration(border: Border.all(color: Colors.blueGrey), 
         //               shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(5.0)),
         padding: EdgeInsets.only(left:10.00, right:5.00),
@@ -338,7 +351,7 @@ class _PurchaseOrder extends State<PurchaseOrder>
         Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-           dispProductDetails(contxt, bloc,products),
+          showScreen == 'ADDDETAIL' ? dispProductDetails(context, bloc) : dispSummaryDetails(context, bloc, loginInfo, poNum)
           ],
       )
     );
@@ -348,16 +361,22 @@ class _PurchaseOrder extends State<PurchaseOrder>
   poNotxtFld(Bloc bloc)
   {
     TextEditingController _controller = new TextEditingController();
-    return StreamBuilder<String>(
-                stream: bloc.poNumberStream,
-                builder:(context,snapshot){
-                if(snapshot.hasData)
-                {_controller.value = _controller.value.copyWith(text: snapshot.data.toString());}
-                SizedBox(width: 300.0,
-                child: TextField(
-                  onChanged: bloc.poNumberChanged,
-                  controller: _controller, 
-                  decoration: InputDecoration(labelText: 'PO No.'),) );});
+    return StreamBuilder(
+      stream: bloc.poNumberStream,
+      builder:(context,snapshot)
+      {
+      if(snapshot.hasData)
+      {_controller.value = _controller.value.copyWith(text: snapshot.data.toString());}
+      return SizedBox(width: 325.0,
+      child: TextField(
+        onChanged: bloc.poNumberChanged,
+        controller: _controller, 
+        enabled: false,
+        decoration: InputDecoration(labelText: 'PO No.'),
+          )
+        );
+      }
+    );
 
   }
 
@@ -375,7 +394,7 @@ poDateFld(Bloc bloc,bool isEditable)
         builder:(context,snapshot){
            if(snapshot.hasData)
             {_controller.value = _controller.value.copyWith(text:DateFormat("dd/MM/yyyy").format(snapshot.data));}
-          return SizedBox(width:300,
+          return SizedBox(width:325,
           child: new DateTimePickerFormField(
             inputType: inputType,
             format: formats[inputType],
@@ -393,6 +412,7 @@ poDateFld(Bloc bloc,bool isEditable)
 
   poSupplerDD(Bloc bloc)
   {
+    bloc.initiateSuppliers(false);
     //SupplierApiProvider wlApi = new SupplierApiProvider();
     return StreamBuilder<String>(
       stream: bloc.poSuppCodeStream,
@@ -405,7 +425,7 @@ poDateFld(Bloc bloc,bool isEditable)
       if (ssWLDD.hasData)
     {
       return SizedBox(
-        width: 300, child: InputDecorator(decoration: InputDecoration(labelText: 'Supplier'),
+        width: 325, child: InputDecorator(decoration: InputDecoration(labelText: 'Supplier'),
         child:DropdownButtonHideUnderline(
         child:  DropdownButton<String>(
         isDense: true,
@@ -425,8 +445,8 @@ poDateFld(Bloc bloc,bool isEditable)
             )
           )
         );
-      } else { return CircularProgressIndicator();}
-      }
+    }else { return CircularProgressIndicator();}
+  }
     );
     }
   );
@@ -530,7 +550,7 @@ poDateFld(Bloc bloc,bool isEditable)
             builder:(context,snapshot){
                if(snapshot.hasData)
       {_controller.value = _controller.value.copyWith(text: snapshot.data.toString());}
-            return SizedBox(width: 300.0,
+            return SizedBox(width: 325.0,
             child: TextField(
               onChanged: bloc.refNumChanged,
               controller: _controller, 
@@ -551,7 +571,7 @@ poPaymentTerm(Bloc bloc)
         { 
           if (ssWLDD.hasData)
           {
-            return SizedBox(width: 300, child: InputDecorator(decoration: InputDecoration(labelText: 'Payment Type'),
+            return SizedBox(width: 325, child: InputDecorator(decoration: InputDecoration(labelText: 'Payment Type'),
             child:DropdownButtonHideUnderline(
               child:  DropdownButton<String>(
                 isDense: true,
@@ -598,13 +618,13 @@ poPaymentTerm(Bloc bloc)
       {_controller.value = _controller.value.copyWith(text: snapshot.data.toString());}
              return SizedBox(width: 150.0,
                 child: TextField(
-                  onChanged: bloc.remarksChanged,
-                  controller: _controller, 
-                  decoration: InputDecoration(labelText: 'Remarks'),) );});
+                onChanged: bloc.remarksChanged,
+                controller: _controller, 
+                decoration: InputDecoration(labelText: 'Remarks'),) );});
 
   }
 
-  orederBtn(BuildContext context, Bloc bloc, Users loginInfo,String poNum)
+  savePOBtn(BuildContext context, Bloc bloc, Users loginInfo,String poNum)
   {
     return ButtonTheme(
     minWidth: 250.0,
@@ -627,7 +647,7 @@ poPaymentTerm(Bloc bloc)
 }
 
 
-Widget listTile(Bloc bloc, List<Product> products)
+Widget listTile(Bloc bloc, Users loginInfo, String poNum)
 {
   return StreamBuilder(
     stream: bloc.poDetails,
@@ -637,7 +657,7 @@ Widget listTile(Bloc bloc, List<Product> products)
       return ListView.builder(
           itemCount: poData.length,
           itemBuilder: (context, index) 
-          { return Container(height: 110.0,padding: EdgeInsets.only(top:15.0),
+          { return poData[index].status ? Container(height: 110.0,padding: EdgeInsets.only(top:15.0),
               child: Card(
                 margin: EdgeInsets.only(right: 5.0, left: 5.0),
                 elevation: 10.0,
@@ -654,7 +674,7 @@ Widget listTile(Bloc bloc, List<Product> products)
                     IconButton(icon: Icon(Icons.edit),
                     onPressed: (){
                       bloc.display4EditPODtls(poData[index].productCode);
-                     _showDialog(context, bloc,products);
+                     _showDialog(context,bloc, 'ADDDETAIL', loginInfo, poNum);
                     },),
                     IconButton(
                       icon: Icon(Icons.delete),
@@ -699,8 +719,124 @@ Widget listTile(Bloc bloc, List<Product> products)
                       ],
                     )),
                   )),
-              )); 
+              )) : Container(); 
         });
     //} else { return Center(child:CircularProgressIndicator());}
   });
 }
+
+
+  Widget summaryFields(BuildContext context, Bloc bloc, Users loginInfo, String poNum)
+  {
+    double fldHeight = 20.0;
+    return StreamBuilder(
+      stream: bloc.poDetails,
+      builder: (context, ssSEDtl) {
+        bool gotData = ssSEDtl.hasData;
+        return Container(height: 250, width: 350, padding: EdgeInsets.only(top:5.0),
+          child:ListTile(
+            title: Column(children: <Widget>[
+              SizedBox(height: 5.0),
+              Row(children: <Widget>[   
+                Expanded(flex:5, child: Text('Total Amt:',style: TextStyle(color: Colors.black, fontSize: fldHeight),)),
+                Expanded(flex:5, child: Text((gotData ?  bloc.getPOSummaryAmt('TOTAL').toString() : ""),style: TextStyle(color: Colors.black, fontSize: fldHeight) )),
+              ]),
+              SizedBox(height: 5.0),
+              Row(children: <Widget>[
+                Expanded(flex:5, child: Text('Other Charges:' ,style: TextStyle(color: Colors.black,fontSize: fldHeight),)),
+                // Expanded(flex:5, child: Text( (gotData ?  bloc.getPOSummaryAmt('OTHER').toString() : ""),style: TextStyle(color: Colors.black,fontSize: fldHeight) )),
+                Expanded(flex:5, child: poOtherCharger(bloc)),
+              ]),
+              Row(children: <Widget>[   
+                Expanded(flex:4, child: Text('Vat 7%:',style: TextStyle(color: Colors.black,fontSize: fldHeight),)),
+                Expanded(flex:2, child: poVatchkBox(bloc)),
+                Expanded(flex:4, child: Text( (gotData ? bloc.getPOSummaryAmt('VAT').toString() : ""),style: TextStyle(color: Colors.black,fontSize: fldHeight),)),                        
+              ]),
+                            
+              Row(children: <Widget>[   
+                Expanded(flex:5, child: Text('Net Amt:',style: TextStyle(color: Colors.black,fontSize: fldHeight),)),
+                Expanded(flex:5, child: Text((gotData ?  bloc.getPOSummaryAmt('NET').toString() : ""),style: TextStyle(color: Colors.black,fontSize: fldHeight) )),
+              ]),  
+              SizedBox(height: 10.0),
+              Divider(color: Colors.black),      
+              Row(children: <Widget>[   
+                Expanded(flex:4, child: backBtn(context)),               
+                Expanded(flex:2, child: Text("")),
+                Expanded(flex:4, child: savePOBtn(context, bloc, loginInfo, poNum)),                
+              ]),                        
+            ])
+            
+          ));
+        }
+      );
+  }
+
+
+
+
+
+  summaryBtn(BuildContext context, Bloc bloc, Users loginInfo, String poNum)
+  {
+    return RaisedButton(        
+        child: Text('SUMMARY',style: TextStyle(color: Colors.white),),
+        onPressed:(){ _showDialog(context, bloc, 'SUMMARYSCREEN', loginInfo, poNum); },
+      );
+  }
+
+
+
+
+  dispSummaryDetails(BuildContext context, Bloc bloc, Users loginInfo,String poNum)
+  {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        SizedBox(height: 5.0),
+        summaryFields(context, bloc, loginInfo, poNum) 
+      ],
+    );        
+  }  
+
+
+  backBtn(BuildContext context)
+  {
+    return  RaisedButton(
+      child: Text('BACK',style: TextStyle(color: Colors.white,fontSize: 18.0),),
+      color: Color(0xffd35400),
+      onPressed: ()async { Navigator.pop(context);},
+    );
+  }
+
+  poVatchkBox(Bloc bloc)
+  {   
+    return StreamBuilder<bool>(
+      stream: bloc.poVat,
+      builder:(context,snapshot){
+        return Checkbox(
+            checkColor: Colors.black,
+            activeColor: Colors.grey,
+            onChanged: bloc.poVatChanged,
+            value: (snapshot.data == null) ? false : snapshot.data,
+        );
+      });
+  }
+
+  poOtherCharger(Bloc bloc)
+  { 
+    TextEditingController _controller = new TextEditingController();
+    return StreamBuilder<String>(
+      stream: bloc.poOtherCharges,
+      builder:(context,snapshot){
+         if(snapshot.hasData)
+         {_controller.value = _controller.value.copyWith(text: snapshot.data.toString(), 
+                                                         selection: new TextSelection.collapsed(offset: snapshot.data.length)); }        
+        return TextField(
+          style: TextStyle(fontSize: 20.0),
+          keyboardType: TextInputType.numberWithOptions(),
+          textDirection: prefix0.TextDirection.ltr,
+          //decoration: InputDecoration(labelText: 'Paid Amount:'),
+           controller: _controller,
+          onChanged: bloc.poOtherChargesChanged
+        );
+      });
+  }

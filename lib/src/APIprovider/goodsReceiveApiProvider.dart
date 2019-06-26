@@ -63,6 +63,20 @@ class GoodsReceiverApi
 
   }
 
+  Future<GoodsReceiverHD> getGoodReceive(int branchID,String documentNo) async
+  {
+    GoodsReceiverHD grHD;
+    String url = '$root/api/operation/goodsreceive/get/$branchID/$documentNo';
+    var future = client.get(url,headers:{"Accept": "application/json","content-type": "application/json"});
+    final response = await future;
+    print(response.body);
+    if(response.statusCode==200){
+       var showGR = json.decode(response.body);
+      grHD =  new GoodsReceiverHD.fromJson(showGR);
+      return grHD;
+    }else {throw Exception('Failed to Edit');}
+  }
+
 
 
 

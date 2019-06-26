@@ -2,16 +2,18 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' show Client;
+import 'package:split/Bloc/CommonVariables.dart';
 import 'package:split/src/Models/loginmodel.dart';
 // import 'package:split/src/Models/loginmodel.dart';
 
 class LoginApi {
 
+  String root = StaticsVar.root;
+
   Client client =Client();
   Future<bool> checkUserLogin(Users users) async{
     String userID = users.userID;
     String pwd = users.password;
-    String root = 'http://posapi.logiconglobal.com';
     String url = '$root/api/auth/login/userdo/$userID/$pwd';
     bool respVal =false;
     // var usr = json.encode(user.toJson());

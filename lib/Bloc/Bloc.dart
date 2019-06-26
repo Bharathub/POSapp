@@ -1,11 +1,16 @@
 import 'dart:async';
+// import 'dart:math';
 // import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:split/Bloc/CommonVariables.dart';
 // import 'package:split/Masterdata/uom.dart';
 import 'package:split/src/APIprovider/customerApiProvider.dart';
+import 'package:split/src/APIprovider/dashBoardApiProvider.dart';
 import 'package:split/src/APIprovider/goodsReceiveApiProvider.dart';
 import 'package:split/src/APIprovider/incotermApiProvider.dart';
+import 'package:split/src/APIprovider/inquiryApiProvider.dart';
 import 'package:split/src/APIprovider/invoiceApiProvider.dart';
 import 'package:split/src/APIprovider/lookUpApiProvider.dart';
 import 'package:split/src/APIprovider/masterProductApiProvider.dart';
@@ -21,6 +26,7 @@ import 'package:split/src/APIprovider/werehouseLocApiProvider.dart';
 import 'package:split/src/Models/branchmodel.dart';
 import 'package:split/src/Models/currencyModel.dart';
 import 'package:split/src/Models/customermodel.dart';
+import 'package:split/src/Models/dashBoardModel.dart';
 import 'package:split/src/Models/goodsReceiveModel.dart';
 import 'package:split/src/Models/incotermModel.dart';
 import 'package:split/src/Models/inquiryModel.dart';
@@ -40,6 +46,23 @@ import 'validator.dart';
 
 class Bloc extends Object with Validators 
 {
+  // Search streams
+  final _searchTxtFldController = BehaviorSubject<String>();
+  final _searchOptionDDController = BehaviorSubject<String>();
+  Stream<String> get searchTextFld => _searchTxtFldController.stream.transform(validateTxtFld);
+  Stream<String> get searchOptionDD => _searchOptionDDController.stream.transform(validateTxtFld);
+  Function(String) get searchTextFldChanged => _searchTxtFldController.sink.add;
+  Function(String) get searchOptionChanged => _searchOptionDDController.sink.add;
+
+  listenSearch()
+  {
+    // _searchTxtFldController.stream.listen((onData) {
+    // yet to implement
+    // });
+  }
+
+
+  // End OF Search Streams
   // Supplier Tariff
   // final _stSuppController = BehaviorSubject<LisUomList
 
@@ -79,19 +102,19 @@ class Bloc extends Object with Validators
 
 
   // initiate here
-  initiateProducts() async 
+  initiateProducts(bool initReload) async 
   { 
-    if(_initProductsController.value == null)
-    {   
+    if(_initProductsController.value == null || initReload)
+    {  
       ProductApiProvider proAPI = new ProductApiProvider();
       List<Product> products = await proAPI.productList();
       _initProductsController.sink.add(products);
     }
   }
   
-  initiateCustomers() async 
+  initiateCustomers(bool initReload) async 
   { 
-    if(_initCustomersController.value == null)
+    if(_initCustomersController.value == null || initReload)
     {   
       CustomerApiProvider custAPI = new CustomerApiProvider();
       List<Customer> customers = await custAPI.customerList();
@@ -99,9 +122,9 @@ class Bloc extends Object with Validators
     }
   }
 
-  initiateSuppliers() async 
+  initiateSuppliers(bool initReload) async 
   { 
-    if(_initSuppliersController.value == null)
+    if(_initSuppliersController.value == null || initReload)
     {   
       SupplierApiProvider custAPI = new SupplierApiProvider();
       List<Supplier> suppliers = await custAPI.supplierList();
@@ -109,9 +132,9 @@ class Bloc extends Object with Validators
     }
   }
 
-  initiateUOMs() async 
+  initiateUOMs(bool initReload) async 
   { 
-    if(_initUOMController.value == null)
+    if(_initUOMController.value == null || initReload)
     {   
       LookUpApiProvider lookupAPI = new LookUpApiProvider();
       List<Lookup> products = await lookupAPI.uomList();
@@ -119,9 +142,9 @@ class Bloc extends Object with Validators
     }
   }
 
-  initiateIncoTerm() async 
+  initiateIncoTerm(bool initReload) async 
   { 
-    if(_initIncoTermController.value == null)
+    if(_initIncoTermController.value == null || initReload)
     {   
       IncotermApiProvider incoTrmApi = new IncotermApiProvider();
       List<Incoterm> incoTerm = await incoTrmApi.incotermList();
@@ -129,9 +152,9 @@ class Bloc extends Object with Validators
     }
   }  
   
-  initiateLocation() async 
+  initiateLocation(bool initReload) async 
   { 
-    if(_initLocationController.value == null)
+    if(_initLocationController.value == null || initReload)
     {   
      WareHouseLocApi locApi = new WareHouseLocApi();
       List<Lookup> location = await locApi.wareHousLocList();
@@ -139,9 +162,9 @@ class Bloc extends Object with Validators
     }
   }  
   
-  initiatePaymentType() async 
+  initiatePaymentType(bool initReload) async 
   { 
-    if(_initPaymentTypeController.value == null)
+    if(_initPaymentTypeController.value == null || initReload)
     {   
       PaymentApiProvider paymentApi = new PaymentApiProvider();
       List<PaymentTypes> payment = await paymentApi.paymentList();
@@ -149,9 +172,9 @@ class Bloc extends Object with Validators
     }
   }
   
-  initiateCurrencys() async 
+  initiateCurrencys(bool initReload) async 
   { 
-    if(_initCurrencyController.value == null)
+    if(_initCurrencyController.value == null || initReload)
     {   
       CurrencyApiProvider currAPI = new CurrencyApiProvider();
       List<Currency> currencys = await currAPI.currencyList();
@@ -159,9 +182,9 @@ class Bloc extends Object with Validators
     }
   }
 
-  initiateProdCategorys() async 
+  initiateProdCategorys(bool initReload) async 
   { 
-    if(_initProdCategoryController.value == null)
+    if(_initProdCategoryController.value == null || initReload)
     {   
       ProductCateProvider prodCatAPI = new ProductCateProvider();
       List<ProductCategorys> prodCategories = await prodCatAPI.productCatList();
@@ -169,9 +192,9 @@ class Bloc extends Object with Validators
     }
   }
 
-  initiateCountrys() async
+  initiateCountrys(bool initReload) async
   {
-    if(_initCountriesController.value == null)
+    if(_initCountriesController.value == null || initReload)
     {
       SupplierApiProvider countryApi = new  SupplierApiProvider();
       List<CountryList> countryList = await countryApi.countrylist();
@@ -218,14 +241,72 @@ class Bloc extends Object with Validators
     return desc;
   }
 
+  getProductUOM(String code)
+  { String uomCode;
+    if(_initProductsController.hasValue)
+    { uomCode = _initProductsController.value.where((prod) => prod.productCode.trim() == code.trim()).first.uom;}
+    uomCode = (uomCode == null || uomCode == "") ? null : uomCode;
+    return uomCode;
+  }
+
+  getProductSellingPrice(String code)
+  { String sellPrice;
+    if(_initProductsController.hasValue)
+    { sellPrice = _initProductsController.value.where((prod) => prod.productCode.trim() == code.trim()).first.sellingPrice.toString();}
+    sellPrice = (sellPrice == null || sellPrice == "") ? '0.0' : sellPrice;
+    return sellPrice;
+  }
+
+
+
   getCustomerName(String code)
-  { String name;
-    if(_initCustomersController.hasValue)
-    { name = _initCustomersController.value.where((cust) => cust.customerCode.trim() == code.trim()).first.customerName;}
-    name = (name == null || name == "") ? 'No Name found' : name;
+  { 
+    // initiateCustomers(true);
+    String name;
+    if(code == 'STD') {name="";}
+    else{
+        if(_initCustomersController.hasValue && _initCustomersController.value != null)
+        { name = _initCustomersController.value.where((cust) => cust.customerCode.trim() == code.trim()).first.customerName;}
+        name = (name == null || name == "") ? 'No Name found' : name;
+    }  
     return name;
   }
+
+  getCustomerAddress(String code)
+  { String name;
+    if(code == 'STD') {name="";}
+    else{
+        if(_initCustomersController.hasValue && _initCustomersController.value != null)
+        { name = _initCustomersController.value.where((cust) => cust.customerCode.trim() == code.trim()).first.addressId;}
+        name = (name == null || name == "") ? '' : name;
+    }  
+    return name;
+  }
+
+  getSupplierAddress(String code)
+  { String address;
+    if(code == 'STD') {address="";}
+    else{
+        if(_initSuppliersController.hasValue && _initSuppliersController.value != null)
+        { address = _initSuppliersController.value.where((cust) => cust.customerCode.trim() == code.trim()).first.addressId;}
+        address = (address == null || address == "") ? '' : address;
+    }  
+    return address;
+  }
+
+  getSupplierContactPerson(String code)
+  { String contPerson;
+    if(code == 'STD') {contPerson="";}
+    else{
+        if(_initSuppliersController.hasValue && _initSuppliersController.value != null)
+        { contPerson = _initSuppliersController.value.where((cust) => cust.customerCode.trim() == code.trim()).first.contactPerson;}
+        contPerson = (contPerson == null || contPerson == "") ? '' : contPerson;
+    }  
+    return contPerson;
+  }
   
+  
+
   getSupplierName(String code)
   { String name;
     if(_initSuppliersController.hasValue)
@@ -236,7 +317,28 @@ class Bloc extends Object with Validators
 
   // End of (Product, Cutomers, Suppliers) List
 
+//DashBoard Stream
+    final _dbIndexController = BehaviorSubject<String>();
+    final _dbTotalSalesController = BehaviorSubject<String>();
+    final _dashBoardController = BehaviorSubject<DashBoards>();
+    Stream<String> get dbIndex => _dbIndexController.stream.transform(lookUpCodValidator);
+    Stream<String> get totalSales => _dbTotalSalesController.stream.transform(lookUpCodValidator);
+    Stream<DashBoards> get dashBoard => _dashBoardController.transform(dashBoardValidators);
+    Function(DashBoards) get dashBoardChanged => _dashBoardController.sink.add;
+    Function(String) get dbIndexChanged => _dbIndexController.sink.add;
+    Function(String) get totalSalesChanged => _dbTotalSalesController.sink.add;
 
+    fetchDashBoardDetails(int count) async
+    {
+      DashBoardApi dashBoardApi = new DashBoardApi();
+      DashBoards dbMod = new DashBoards();
+      dbMod = await dashBoardApi.getDashBoards(StaticsVar.branchID,count);
+      
+      _dashBoardController.sink.add(dbMod);
+    }
+
+
+// Stream<List<SalesEntryDetails>> get seDetails =>_seDetailsController.stream.transform(seDetailsValidators);
   //ProductCategory List
   final _proCatDtlsController = BehaviorSubject<List<ProductCategorys>>();
   //ProductCategory List
@@ -486,11 +588,12 @@ class Bloc extends Object with Validators
   Function(String) get faxNumChange => _faxNumController.sink.add;
   Function(String) get emailAddChange => _emailAddController.sink.add;
  
-
- 
-
-
   //Purchase Orders
+  final _poTotalAmountController = BehaviorSubject<String>();
+  final _poOtherChargesController = BehaviorSubject<String>();
+  final _poVATController = BehaviorSubject<bool>();
+  final _poNetAmtController = BehaviorSubject<String>();
+
   final _poSuppCodeController = BehaviorSubject<String>();
   final _poNumberController = BehaviorSubject<String>();
   final _poDateController = BehaviorSubject<DateTime>();
@@ -505,6 +608,10 @@ class Bloc extends Object with Validators
   final _remarksController = BehaviorSubject<String>();
   final _poItemsController = BehaviorSubject<List<PurchaseOrderDetails>>();
 
+  Stream<String> get poTotalAmt =>  _poTotalAmountController.stream.transform(validateTxtFld);
+  Stream<String> get poOtherCharges =>  _poOtherChargesController.stream.transform(validateTxtFld);
+  Stream<bool> get poVat =>  _poVATController.stream.transform(isSelectedValidator);
+  Stream<String> get poNetAmt =>  _poNetAmtController.stream.transform(validateTxtFld);
   Stream<String> get poSuppCodeStream =>  _poSuppCodeController.stream.transform(validateTxtFld);
   Stream<String> get poNumberStream =>  _poNumberController.stream.transform(validateTxtFld);
   Stream<DateTime> get datePurStream => _poDateController.stream.transform(dateTimeValidator);
@@ -519,6 +626,10 @@ class Bloc extends Object with Validators
   Stream<String> get remarksStream => _remarksController.stream.transform(validateTxtFld);
   Stream<List<PurchaseOrderDetails>> get poItems => _poItemsController.stream.transform(poHeaderValidators);
 
+  Function(String) get poTotalAmtChanged => _poTotalAmountController.sink.add;
+  Function(String) get poOtherChargesChanged => _poOtherChargesController.sink.add;
+  Function(bool) get poVatChanged => _poVATController.sink.add;
+  Function(String) get poNetAmtChanged => _poNetAmtController.sink.add;
   Function(String) get poSuppCodeChanged => _poSuppCodeController.sink.add;
   Function(String) get poNumberChanged => _poNumberController.sink.add;
   Function(DateTime) get datePurChanged => _poDateController.sink.add;
@@ -588,6 +699,7 @@ class Bloc extends Object with Validators
   Function(List<QuotationItems>) get quotationItemsChanged => _quotationItemsController.sink.add;
 
   // Quotation customer
+  final _qCusNoController =BehaviorSubject<String>();
   final _qCusCCodeController =BehaviorSubject<String>();
   final _qCusEffecDateController =BehaviorSubject<DateTime>();
   final _qCusExprDateController =BehaviorSubject<DateTime>();
@@ -595,8 +707,9 @@ class Bloc extends Object with Validators
   final _qCusSellratePUController =BehaviorSubject<String>();
   final _qCusPaymentPUController =BehaviorSubject<String>();
   final _qCustEffDateCtrl = BehaviorSubject<String>();
+  final _qCustomerQuotListCtrl = BehaviorSubject<List<QuotationHd>>();
 
-
+  Stream<String> get qCusNoCode => _qCusNoController.stream.transform(validateTxtFld);
   Stream<String> get qCusCCode => _qCusCCodeController.stream.transform(validateTxtFld);
   Stream<DateTime> get qCusEffecDate => _qCusEffecDateController.stream.transform(dateTimeValidator);
   Stream<DateTime> get qCusExprDate => _qCusExprDateController.stream.transform(dateTimeValidator);
@@ -604,8 +717,9 @@ class Bloc extends Object with Validators
   Stream<String> get qCusSellratePU => _qCusSellratePUController.stream.transform(validateTxtFld);
   Stream<String> get qCusPaymentPU => _qCusPaymentPUController.stream.transform(validateTxtFld);
   Stream<String> get qCustEffDate => _qCustEffDateCtrl.stream.transform(validateTxtFld);
+  Stream<List<QuotationHd>> get custQuotationList => _qCustomerQuotListCtrl.stream.transform(validateQuotationHd);
   
-
+  Function(String) get qCusNoCodeChanged  => _qCusNoController.sink.add;
   Function(String) get qCusCCodeChanged  => _qCusCCodeController.sink.add;
   Function(DateTime) get qCusEffecDateChanged => _qCusEffecDateController.sink.add;
   Function(DateTime) get qCusExprDateChanged => _qCusExprDateController.sink.add;
@@ -613,6 +727,25 @@ class Bloc extends Object with Validators
   Function(String) get qCusSellratePUChanged => _qCusSellratePUController.sink.add;
   Function(String) get qCusPaymentPUChanged => _qCusPaymentPUController.sink.add;
   Function(String) get qCustEffDateChanged => _qCustEffDateCtrl.sink.add;
+  Function(List<QuotationHd>) get custQuotionListChanged => _qCustomerQuotListCtrl.sink.add;
+
+  fillCustomerQuotList(bool isReload) async
+  {
+    //if(!_qCustomerQuotListCtrl.hasValue || _qCustomerQuotListCtrl.value == null )
+    if(isReload)
+    {
+      QuotationApiProvider qtApi = new QuotationApiProvider();
+      _qCustomerQuotListCtrl.sink.add(await qtApi.quotationCustomerList(StaticsVar.branchID));
+    }
+
+    _searchTxtFldController.stream.listen((onData) {
+      //print(onData);
+      if(onData.length == 0) {fillCustomerQuotList(true);}
+      _qCustomerQuotListCtrl.sink.add(_qCustomerQuotListCtrl.value.where((cust) => cust.customerName.contains(onData)).toList());
+    }); 
+  }
+
+
 
 // Supplier Quotation
   final _qSupDropDwnController =BehaviorSubject<String>();
@@ -637,7 +770,7 @@ class Bloc extends Object with Validators
   Function(String) get qSuppCurrentyDDChanged => _qSupSellratePUController.sink.add;
 
   // Transaction SALES ENTRY
-  
+  final _seCustNoController = BehaviorSubject<String>();
   final _seCustCodeController = BehaviorSubject<String>();
   final _seCustAddressController = BehaviorSubject<String>();
   final _seSalesDateController = BehaviorSubject<DateTime>();
@@ -648,10 +781,15 @@ class Bloc extends Object with Validators
   final _seUOMController = BehaviorSubject<String>();
   final _seProdCodeController = BehaviorSubject<String>();
   final _seDiscountTypeController = BehaviorSubject<String>();
+  final _seSellRateController = BehaviorSubject<String>();
   final _seDiscountController = BehaviorSubject<String>();
+  final _sePaidAmntController = BehaviorSubject<String>();
+  final _seVatController = BehaviorSubject<bool>();
+  final _seWHTaxController = BehaviorSubject<bool>();  
   final _seHeaderController = BehaviorSubject<SalesEntryHd>();
   final _seDetailsController = BehaviorSubject<List<SalesEntryDetails>>();
 
+  Stream<String> get seCustNo => _seCustNoController.stream.transform(validateTxtFld);
   Stream<String> get seCustCode => _seCustCodeController.stream.transform(validateTxtFld);
   Stream<String> get seCustAddress => _seCustAddressController.stream.transform(validateTxtFld);
   Stream<DateTime> get seSalesDate =>_seSalesDateController.stream.transform(dateTimeValidator);
@@ -663,9 +801,14 @@ class Bloc extends Object with Validators
   Stream<String> get seProdCode =>_seProdCodeController.stream.transform(validateTxtFld);
   Stream<String> get seDiscountType =>_seDiscountTypeController.stream.transform(validateTxtFld);
   Stream<String> get seDiscount =>_seDiscountController.stream.transform(validateTxtFld);
+  Stream<String> get seSellRate =>_seSellRateController.stream.transform(validateTxtFld);
+  Stream<String> get sePaidAmnt =>_sePaidAmntController.stream.transform(validateTxtFld);
+  Stream<bool> get seVat =>_seVatController.stream.transform(isSelectedValidator);
+  Stream<bool> get seWitHld =>_seWHTaxController.stream.transform(isSelectedValidator);
   Stream<SalesEntryHd> get seHeader =>_seHeaderController.stream.transform(seHeaderValidators);
   Stream<List<SalesEntryDetails>> get seDetails =>_seDetailsController.stream.transform(seDetailsValidators);
-
+ 
+  Function(String) get seCustNoChanged  => _seCustNoController.sink.add;
   Function(String) get seCustCodeChanged  => _seCustCodeController.sink.add;
   Function(String) get seCustAddressChanged  => _seCustAddressController.sink.add;
   Function(DateTime) get seSalesDateChanged => _seSalesDateController.sink.add;
@@ -677,6 +820,10 @@ class Bloc extends Object with Validators
   Function(String) get seProdCodeChanged  => _seProdCodeController.sink.add;
   Function(String) get seDiscountTypeChanged  => _seDiscountTypeController.sink.add;
   Function(String) get seDiscountChanged  => _seDiscountController.sink.add;
+  Function(String) get seSellRateChanged  => _seSellRateController.sink.add;
+  Function(String) get sePaindAmntChanged  => _sePaidAmntController.sink.add;
+  Function(bool) get seVatChanged  => _seVatController.sink.add;
+  Function(bool) get seWitHldChanged  => _seWHTaxController.sink.add;
   Function(List<SalesEntryDetails>) get seDetailsChanged  => _seDetailsController.sink.add;
 
   listenProdCode()
@@ -686,41 +833,40 @@ class Bloc extends Object with Validators
 
   getNaddSEDetails() async {
     SalesEntryApi seAPI =new SalesEntryApi();
-    SalesEntryDetails seDetail = new SalesEntryDetails();
+    List<SalesEntryDetails> seDetailList = []; // new SalesEntryDetails();
     List<SalesEntryDetails> seDetails = [];
     bool isrepeated = false;
 
-    if(_seDetailsController.hasValue && _seDetailsController.value != null) {
+    if(_seDetailsController.hasValue && _seDetailsController.value != null) 
+    {
       seDetails.addAll(_seDetailsController.value);
-    //  _seUOMController.sink.add(null);
-
-
       for(SalesEntryDetails dtl in _seDetailsController.value) 
-        { if(dtl.productCode.trim() ==  _seProdCodeController.value.trim())
-           
-            {isrepeated = true;}
-        }     
+        { if(dtl.productCode.trim() == _seProdCodeController.value.trim()) {isrepeated = true;}}     
     }
 
   if (!isrepeated)
   {
     if(_seProdCodeController.value != null && _seQtyController.value != null)
     {
-      seDetail = await seAPI.getSalesEntryItem(StaticsVar.branchID,
-                                                _seCustCodeController.value.trim(), 
-                                                _seProdCodeController.value.trim(),
-                                                _seQtyController.value);
-      if (seDetail != null)
+      seDetailList = await seAPI.getSalesEntryItem(StaticsVar.branchID, _seCustCodeController.value.trim(), 
+                      _seProdCodeController.value.trim(), _seQtyController.value);
+      if (seDetailList != null)
       {
-        //seDetail.createdBy = loginInfo.userID;
-        //seDetail.createdOn = DateTime.now();63+
-        seDetails.add(seDetail);
-        // _seUOMController.sink.add(seDetails.uom); //bharath added this
-        _seDetailsController.sink.add(seDetails); 
+        for(SalesEntryDetails sed in seDetailList)
+        {
+          sed.status = false;
+          if(sed.parentProductCode == "")
+          {  
+            _seUOMController.sink.add(sed.uom == "" ? null : sed.uom);
+            _seSellRateController.sink.add(sed.sellRate.toString());
+          }
+          seDetails.add(sed);          
+        }
+        _seDetailsController.sink.add(seDetails);
       }
-      //else{StaticsVar.showAlert(context, "Product Details are Empty");}
     }  
   }  
+  
     // after adding Set Detail Stream fields to null
     // _seProdCodeController.sink.add(null);
     // _seUOMController.sink.add(null);
@@ -730,67 +876,76 @@ class Bloc extends Object with Validators
   //updateSalesEntryDetail(String quotProdCode)
   addSEDetails(Users loginInfo)
   {
-    // List<SalesEntryDetails> listSEDetails = [];
-   // bool isNew = true;
-
-    // if(_seDetailsController.value != null) {listSEDetails.addAll(_seDetailsController.value); }
-    // // SalesEntryDetails quotItem = new SalesEntryDetails();
-    for (SalesEntryDetails item in _seDetailsController.value)
-    { 
-      if(item.productCode.trim() == _seProdCodeController.value.trim())
+    SalesEntryDetails quotItem = new SalesEntryDetails();
+    List<SalesEntryDetails> listSEDetails = [];
+    bool isNew = true;
+    if(_seDetailsController.value != null) {//listSEDetails.addAll(_seDetailsController.value); 
+      for (SalesEntryDetails item in _seDetailsController.value)
       { 
-        // isNew = false;
-        item.uom = (_seUOMController.value); //bharath added this
-        item.createdBy = loginInfo.userID;
-        item.createdOn = DateTime.now();
-        item.discountType = (_seDiscountTypeController.value);
-        item.discountAmount = double.parse(_seDiscountController.value);
-        //'NONE','PERCENTAGE','AMOUNT',
-        if(item.discountType=='AMOUNT')
-          { item.partialPayment = item.sellPrice - item.discountAmount; }
-        else if(item.discountType=='PERCENTAGE')
-            {item.partialPayment = item.sellPrice - ((item.sellPrice * item.discountAmount)/100);}
+        if(item.parentProductCode.trim() == _seProdCodeController.value.trim())
+        {item.status = true;}
+
+        if(item.productCode.trim() == _seProdCodeController.value.trim())
+        { 
+          isNew = false;
+          item.productCode = _seProdCodeController.value;
+          item.quantity = double.parse( _seQtyController.value);
+          item.sellRate = double.parse(_seSellRateController.value); // bharath added 04.06.19.1.46pm
+          item.sellPrice = (item.sellPrice == 0.0) ? (item.sellRate * item.quantity) : item.sellPrice;
+          item.uom = (_seUOMController.value); //bharath added
+          item.createdBy = loginInfo.userID;
+          item.createdOn = DateTime.now();
+          item.status = true;
+          item.discountType = (_seDiscountTypeController.value);
+          item.discountAmount = double.parse(_seDiscountTypeController.value == 'NONE' ? "0.0" : _seDiscountController.value );
+          //'NONE','PERCENTAGE','AMOUNT',
+          // print('DISC : ' + item.discountType);
+          if(item.discountType=='AMOUNT')
+            { item.partialPayment = (item.sellPrice == 0.0) ? 0.0 : (item.sellPrice - item.discountAmount); }
+          if(item.discountType=='PERCENTAGE')
+            {item.partialPayment = (item.sellPrice == 0.0) ? 0.0 : (item.sellPrice - ((item.sellPrice * item.discountAmount)/100));}
+          if(item.discountType=='NONE') {item.partialPayment = item.sellPrice;}
+        } 
+        listSEDetails.add(item);
       }
     }
-    
-    // _seDetailsController.sink.add(listSEDetails);
 
-    // if(isNew)
-    // {
-    //   SalesEntryDetails seItem = new SalesEntryDetails();
-    //   seItem.productCode = _seProdCodeController.value.trim();
-    //   seItem.quantity = double.parse(_seQtyController.value);
-    //   seItem.createdBy = loginInfo.userID;
-    //   seItem.createdOn = DateTime.now();
-    //   seItem.discountType = (_seDiscountTypeController.value);
-    //   seItem.discountAmount = double.parse(_seDiscountController.value);
-    //   //'NONE','PERCENTAGE','AMOUNT',
-    //   if(seItem.discountType=='AMOUNT')
-    //     { seItem.partialPayment = seItem.sellPrice - seItem.discountAmount; }
-    //   else if(seItem.discountType=='PERCENTAGE')
-    //       {seItem.partialPayment = seItem.sellPrice - ((seItem.sellPrice * seItem.discountAmount)/100);}
+    if(isNew)
+    {
+      quotItem.productCode = _seProdCodeController.value;
+      quotItem.quantity = double.parse( _seQtyController.value);
+      quotItem.sellRate = double.parse(_seSellRateController.value); // bharath added 04.06.19.1.46pm
+      quotItem.sellPrice = (quotItem.sellPrice == 0.0) ? (quotItem.sellRate * quotItem.quantity) : quotItem.sellPrice;
+      quotItem.uom = _seUOMController.value; //bharath added
+      quotItem.createdBy = loginInfo.userID;
+      quotItem.createdOn = DateTime.now();
+      quotItem.discountType = (_seDiscountTypeController.value);
+      quotItem.status = true;
+      quotItem.discountAmount = double.parse(_seDiscountTypeController.value == 'NONE' ? "0.0" : _seDiscountController.value );
+      //'NONE','PERCENTAGE','AMOUNT',
+      // print('DISC : ' + quotItem.discountType);
+      if(quotItem.discountType=='AMOUNT')
+        { quotItem.partialPayment = (quotItem.sellPrice == 0.0) ? 0.0 : (quotItem.sellPrice - quotItem.discountAmount); }
+      if(quotItem.discountType=='PERCENTAGE')
+        {quotItem.partialPayment = (quotItem.sellPrice == 0.0) ? 0.0 : (quotItem.sellPrice - ((quotItem.sellPrice * quotItem.discountAmount)/100));}
+      if(quotItem.discountType=='NONE') {quotItem.partialPayment = quotItem.sellPrice;}
+        
+      listSEDetails.add(quotItem);      
+    }
 
-    //   listSEDetails.add(seItem);
-    // }
-    // _seDetailsController.sink.add(listSEDetails);
-    // _seDetailsController.stream.listen((onData) => {});
-
-    // after adding Set Detail Stream fields to null
-    // _seProdCodeController.sink.add(null);
-    // _seUOMController.sink.add(null);
-    // _seQtyController.sink.add(null); 
-    // _seDiscountTypeController.sink.add(null);
-    // _seDiscountController.sink.add(null);   
-  }
+    _seDetailsController.sink.add(listSEDetails);
+  }  
 
   SalesEntryHd getSalesEntry(Users loginInfo,String orderNum)
   {
+    bool isPaidAmtCanEdit = (orderNum == "");
+
     SalesEntryHd seHD = new SalesEntryHd();
     seHD.orderNo = orderNum;
     seHD.orderDate= DateTime.now();
     seHD.branchId= StaticsVar.branchID;
     seHD.customerCode= _seCustCodeController.value;
-    seHD.customerName= "";
+    seHD.customerName = getCustomerName(_seCustCodeController.value);
     seHD.regNo= "";
     seHD.customerAddress= "";
     seHD.saleType= _sePaymentTypeController.value == null ? "" : _sePaymentTypeController.value;
@@ -798,20 +953,20 @@ class Bloc extends Object with Validators
     seHD.isApproved= false;
     seHD.createdBy= loginInfo.userID;
     seHD.createdOn= DateTime.now();
-    seHD.modifiedBy = "";
+    seHD.modifiedBy = loginInfo.userID;
     seHD.modifiedOn = DateTime.now();
     seHD.isPayLater= false;
     seHD.paymentDays= 0;
-    seHD.totalAmount= getAmt('TOTAL');
-    seHD.isVat= false;
-    seHD.isWhTax= false;
-    seHD.vatAmount= 0;
-    seHD.whTaxPercent= 0;
-    seHD.withHoldingAmount= 0.0;
-    seHD.netAmount= getAmt('NET');
-    seHD.paidAmount= getAmt('PAID');
-    seHD.balanceAmount= getAmt('BALANCE');
-    seHD.discountAmount= getAmt('DISCOUNT');
+    seHD.totalAmount= getAmt('TOTAL',isPaidAmtCanEdit);
+    seHD.isVat= _seVatController.value == null ? false : _seVatController.value;
+    seHD.isWhTax= _seWHTaxController.value == null ? false : _seWHTaxController.value;
+    seHD.vatAmount= getAmt('VAT',isPaidAmtCanEdit);
+    seHD.whTaxPercent= StaticsVar.whTaxPercent;
+    seHD.withHoldingAmount= getAmt('WHTAX',isPaidAmtCanEdit);
+    seHD.netAmount= getAmt('NET',isPaidAmtCanEdit);
+    seHD.paidAmount= getAmt('PAID',isPaidAmtCanEdit);
+    seHD.balanceAmount= getAmt('BALANCE',isPaidAmtCanEdit);
+    seHD.discountAmount= getAmt('DISCOUNT',isPaidAmtCanEdit);
     seHD.paymentType = _sePaymentTypeController.value== null ? "" :  _sePaymentTypeController.value;
     seHD.isRequireDelivery = false;
     seHD.deliveryDate= _seDelvDateController.value == null ? DateTime.now() : _seDelvDateController.value;
@@ -822,44 +977,96 @@ class Bloc extends Object with Validators
     return seHD;
   }
 
-  getAmt(String amtType)
+  vatchecked()
+  {
+    _seVatController.stream.listen((onSelect)
+    { _sePaidAmntController.sink.add("0.0");
+      _seDetailsController.sink.add(_seDetailsController.value);});
+    _seWHTaxController.stream.listen((onSelect)
+    { _sePaidAmntController.sink.add("0.0");
+      _seDetailsController.sink.add(_seDetailsController.value);});
+    _sePaidAmntController.stream.listen((ondata){_seDetailsController.sink.add(_seDetailsController.value);});
+
+    _seCustCodeController.stream.listen((ondata){_seCustAddressController.sink.add(getCustomerAddress(ondata));}); 
+  }
+
+  getAmt(String amtType, bool isPaidAmtCanEdit)
   {
     double amount = 0.00;
     double totAmt = 0.00;
     double netAmt = 0.00;
+    double discAmt = 0.00;
+    double vatAmt = 0.00;
+    double whTaxAmt = 0.00;
+    double paidAmt = 0.00;
 
     if(_seDetailsController.hasValue)
+    {
+      for (SalesEntryDetails quotItem in _seDetailsController.value)
       {
-        for (SalesEntryDetails quotItem in _seDetailsController.value)
-        { 
+        //print('Partial AMT ' + quotItem.partialPayment.toString()); 
+        if(quotItem.status)
+        {  
           totAmt = totAmt + quotItem.sellPrice;
           netAmt = netAmt + quotItem.partialPayment;
+          discAmt = totAmt - (netAmt > 0.00 ? netAmt : totAmt);
         }
       }
-
-      if(amtType == 'TOTAL')
-        {amount = totAmt;}
-      if(amtType == 'DISCOUNT')
-        {amount = totAmt - (netAmt > 0.00 ? netAmt : totAmt);} 
-        // if net amt is zero then disc is having wrong value, Hence condition applied
-      if(amtType == 'NET')
-        {amount = netAmt;} 
+    }
+    
+    if(_seVatController.hasValue) // if checked Vat then net = net + Vat
+      { if(_seVatController.value) 
+        { //print('VAT AMT ' ); 
+          vatAmt = ((totAmt - discAmt) * (StaticsVar.vatPercent/100));
+          netAmt =  netAmt + vatAmt;}
+      } 
+    if(_seWHTaxController.hasValue) // if checked Vat then net = net - withHold tax
+      { if(_seWHTaxController.value) 
+        { //print('WHTAX AMT ' ); 
+          whTaxAmt = ((totAmt - discAmt) * (StaticsVar.whTaxPercent/100));
+          netAmt = netAmt - whTaxAmt;}
+      }
+    if(_sePaidAmntController.hasValue)
+      { //print('PAID AMT ' ); 
+        if(_sePaidAmntController.value == "0.0")
+          { paidAmt = double.parse(netAmt.toStringAsFixed(2)); _sePaidAmntController.sink.add(paidAmt.toString());} // double.parse(_sePaidAmntController.value.toString());}
+        else
+          { paidAmt = double.parse(_sePaidAmntController.value == "" ? "0.0" : _sePaidAmntController.value.toString());}
+        // if(isPaidAmtCanEdit) 
+        // {paidAmt = double.parse(netAmt.toStringAsFixed(2)); //_sePaidAmntController.sink.add(paidAmt.toString());
+        // }
+      }
       
-    return amount;   
+    if(amtType == 'TOTAL')
+      {amount = totAmt;}
+    if(amtType == 'DISCOUNT')
+      {amount = discAmt;} 
+      // if net amt is zero then disc is having wrong value, Hence condition applied
+    if(amtType == 'NET')
+      {amount = netAmt;}
+    if(amtType == 'VAT')
+      {amount = vatAmt;}
+    if(amtType == 'WHTAX')
+      {amount = whTaxAmt;}
+    if(amtType == 'PAID')
+      {amount = paidAmt;}      
+    if(amtType == 'BALANCE')
+      {amount = netAmt - paidAmt;}
+     
+    return (double.parse(amount.toStringAsFixed(2)));   
   }
 
   deleteSEDetail(String poProdCode)
   {
     List<SalesEntryDetails> listSEDtls = [];
-  
     for (SalesEntryDetails seDT in _seDetailsController.value)
     {
-      if(seDT.productCode!=poProdCode) { listSEDtls.add(seDT);}
+      if(seDT.productCode.trim() == poProdCode.trim() || !seDT.status)
+      {seDT.status = false;} else {seDT.status = true;}
+      listSEDtls.add(seDT);
     }
-
     _seDetailsController.sink.add(listSEDtls);
-    _seDetailsController.stream.listen((onData) => {});
-    
+    _seDetailsController.stream.listen((onData) => {});    
   }
 
   // END OF SALES ENTRY
@@ -910,16 +1117,18 @@ class Bloc extends Object with Validators
     _gRVendorController.sink.add(null);
     _gRItemsController.sink.add(null);
   }
-  deleteGrItems(String documentNo)
+
+  deleteGrItems(String productCode)
   {
     List<GoodsReceiveItems> listGrItems = [];
     for (GoodsReceiveItems quotItem in _gRItemsController.value)
-    {if(quotItem.documentNo!=documentNo) { listGrItems.add(quotItem);}}
+    {
+      if(quotItem.productCode.trim() != productCode.trim() || !quotItem.status) 
+      {quotItem.status = true;} else {quotItem.status = false;}
+      listGrItems.add(quotItem);
+    }
     _gRItemsController.sink.add(listGrItems);
-    _gRItemsController.stream.listen((onData) => {});
   }
-
-
 
   GoodsReceiverHD getSaveGoodsReceiver(Users loginInfo)
   {
@@ -940,12 +1149,31 @@ class Bloc extends Object with Validators
     { 
       if(quotItem.productCode==quotProdCode) 
       { quotItem.receiveQuantity = double.parse(_gRReceivedQtyController.value);
-        quotItem.pendingQuantity = quotItem.quantity - double.parse(_gRReceivedQtyController.value);
+        quotItem.pendingQuantity = quotItem.pendingQuantity - double.parse(_gRReceivedQtyController.value);
       }
       listQuotItems.add(quotItem);
     }
     _gRItemsController.sink.add(listQuotItems);
-    _gRItemsController.stream.listen((onData) => {});
+  }
+
+  fetchGoodsReceive(String documentNo) async
+  {
+    // if(documentNo == null || documentNo == ""){clearPO();}
+    // else{
+      GoodsReceiverApi grApi = new GoodsReceiverApi();
+      GoodsReceiverHD grHD = await grApi.getGoodReceive(StaticsVar.branchID, documentNo);
+        if(grHD != null)
+          {
+            _gRPOnoController.sink.add(grHD.poNo.trim());
+            _gRProdRectNOController.sink.add(grHD.documentType.toString());
+            _gRDateController.sink.add(grHD.documentDate);
+            _gRVendorController.sink.add(grHD.supplierCode.toString());
+            // _gRReceivedQtyController.sink.add(grHD.poNo.trim());
+            // _gRHeaderController.sink.add(grHD.poNo.trim());
+              if(grHD.goodsReceivePoDetailList != null)
+              {_gRItemsController.sink.add(grHD.goodsReceivePoDetailList);}
+          }
+        // }
   }
 
 
@@ -958,17 +1186,78 @@ class Bloc extends Object with Validators
   final _catInqDDController = BehaviorSubject<String>();
   final _suppliercatInqDDController = BehaviorSubject<String>();
   final _inquiryDtlsController = BehaviorSubject<String>();
+  final _inqInvCusmrController = BehaviorSubject<String>();
+  final _inqInvDateFromController = BehaviorSubject<DateTime>();
+  final _inqInvDateToController = BehaviorSubject<DateTime>();
+  final _inqInvPaymentTypController = BehaviorSubject<String>();
+  final _stockInqDtlsController = BehaviorSubject<List<StockInquiry>>();
 
   Stream<String> get branchInqdd => _branchInqDDController.stream.transform(proUOMDrpdwnPoupValidator);
   Stream<String> get prodcatInqdd => _productInqDDController.stream.transform(proUOMDrpdwnPoupValidator);
   Stream<String> get catInqdd => _catInqDDController.stream.transform(proUOMDrpdwnPoupValidator);
   Stream<String> get supplierCodeInqdd => _suppliercatInqDDController.stream.transform(proUOMDrpdwnPoupValidator);
- 
+  Stream<String> get inqInvCustmr => _inqInvCusmrController.stream.transform(proUOMDrpdwnPoupValidator);
+  Stream<DateTime> get inqInvDateFrom => _inqInvDateFromController.stream.transform(dateTimeValidator);
+  Stream<DateTime> get inqInvDateTo => _inqInvDateToController.stream.transform(dateTimeValidator);
+  Stream<String> get inqInvType => _inqInvPaymentTypController.stream.transform(proUOMDrpdwnPoupValidator);
+ Stream<List<StockInquiry>> get stockInqDtls => _stockInqDtlsController.stream.transform(stockInqValidator);  
+
+
   Function(String) get branchInqddChanged => _branchInqDDController.sink.add;
   Function(String) get prodcatInqddChanged => _productInqDDController.sink.add;
   Function(String) get catInqddrddChanged => _catInqDDController.sink.add;
   Function(String) get supplierCodeInqddChanged => _suppliercatInqDDController.sink.add;
+  Function(String) get inqInvCustmrChanged => _inqInvCusmrController.sink.add;
+  Function(DateTime) get inqInvDateFromChanged => _inqInvDateFromController.sink.add;
+  Function(DateTime) get inqInvDateToChanged => _inqInvDateToController.sink.add;
+  Function(String) get inqInvTypeChanged => _inqInvPaymentTypController.sink.add;
+  Function(List<StockInquiry>)get stockInqDtlsChanged => _stockInqDtlsController.sink.add;
 
+  
+  getSr4InqInvoices() async
+  {
+    InquiryApi inqApi = new InquiryApi();
+    SrchUnApprdInvoice inqInvoice = new SrchUnApprdInvoice();
+    
+    inqInvoice.branchId = StaticsVar.branchID;
+    inqInvoice.customerCode = _inqInvCusmrController.value;
+    inqInvoice.dateFrom = _inqInvDateFromController.value;
+    inqInvoice.dateTo = _inqInvDateToController.value;
+    inqInvoice.invoiceType = _inqInvPaymentTypController.value;  
+    _unApprvdInvController.sink.add(await inqApi.getInquiryInvoices(inqInvoice));
+  }
+
+  getSer4StockInq() async
+  {
+    InquiryApi inqApi = new InquiryApi();
+    Search4StockEnq stockInq = new Search4StockEnq();
+    
+    stockInq.branchId = StaticsVar.branchID;
+    stockInq.productCode = _productInqDDController.value;
+    stockInq.productCategory = _catInqDDController.value;
+    stockInq.supplierCode = _suppliercatInqDDController.value;
+    _stockInqDtlsController.sink.add(await inqApi.getStockInquiry(stockInq));
+
+  }
+
+  clearStockInq()
+  {
+    _branchInqDDController.sink.add(null);
+    _productInqDDController.sink.add(null);
+    _catInqDDController.sink.add(null);
+    _suppliercatInqDDController.sink.add(null);
+    _stockInqDtlsController.sink.add(null);
+  }
+
+  clearInqInvoice()
+  {
+    String initdate = DateFormat("yyyy-MM-01").format(DateTime.now()).toString();
+     _inqInvCusmrController.sink.add(null);
+      _inqInvDateFromController.sink.add(DateTime.tryParse(initdate));
+      _inqInvDateToController.sink.add(DateTime.now());
+     _inqInvPaymentTypController.sink.add(null);
+     _unApprvdInvController.sink.add(null);
+  }
   // Billing
 
 // Invoice Approval _invApDateToController
@@ -976,33 +1265,38 @@ class Bloc extends Object with Validators
   final _invApDateFromController =BehaviorSubject<DateTime>();
   final _invApDateToController =BehaviorSubject<DateTime>();
   final _invApprvdPaymentController =BehaviorSubject<String>();
+  final _isInvSelectedController =BehaviorSubject<bool>();
   final _unBilldCustomerController =BehaviorSubject<String>();
   final _unBilldDateFormController =BehaviorSubject<DateTime>();
   final _unBilldDateToController =BehaviorSubject<DateTime>();
   final _unBilldPaymentController =BehaviorSubject<String>();
   final _unApprvdInvController = BehaviorSubject<List<UnApprovedInvoice>>();
-  
+  final _unBilledInvController = BehaviorSubject<List<UnBilledInvoice>>();
 
   Stream<String> get invAprCustomer => _invAprCustomerController.stream.transform(validateTxtFld);
   Stream<DateTime> get invApDateFrom => _invApDateFromController.stream.transform(dateTimeValidator);
   Stream<DateTime> get invApDateTo => _invApDateToController.stream.transform(dateTimeValidator);
   Stream<String> get invApprvlPayment => _invApprvdPaymentController.stream.transform(validateTxtFld);
+  Stream<bool> get isInvSelected => _isInvSelectedController.stream.transform(isSelectedValidator);
   Stream<String> get unBilldCustomer => _unBilldCustomerController.stream.transform(validateTxtFld);
-  Stream<DateTime> get unBilldDateForm => _unBilldDateFormController.stream.transform(dateTimeValidator);
+  Stream<DateTime> get unBilldDateFrom => _unBilldDateFormController.stream.transform(dateTimeValidator);
   Stream<DateTime> get unBilldDateTo => _unBilldDateToController.stream.transform(dateTimeValidator);
   Stream<String> get unBilldPayment => _unBilldPaymentController.stream.transform(validateTxtFld);
   Stream<List<UnApprovedInvoice>> get unApprvdInvoices => _unApprvdInvController.stream.transform(unApprvdInvValidator);
+  Stream<List<UnBilledInvoice>> get unBilledInvoices => _unBilledInvController.stream.transform(unBilledInvValidator);  
 
 
   Function(String)get invAprCustomerChanged => _invAprCustomerController.sink.add;
   Function(DateTime)get invApDateChanged => _invApDateFromController.sink.add;
   Function(DateTime) get invApDateToChanged  => _invApDateToController.sink.add;
   Function(String)get invApprvlPaymentChenged => _invApprvdPaymentController.sink.add;
+  Function(bool)get isInvSelectedChanged => _isInvSelectedController.sink.add;
   Function(String)get unBilldCustomerChanged => _unBilldCustomerController.sink.add;
   Function(DateTime)get unBilldDateFormChanged => _unBilldDateFormController.sink.add;
   Function(DateTime) get unBilldDateToChanged  => _unBilldDateToController.sink.add;
   Function(String)get unBilldPaymentChanged => _unBilldPaymentController.sink.add;
   Function(List<UnApprovedInvoice>)get unApprvdInvoicesChanged => _unApprvdInvController.sink.add;
+  Function(List<UnBilledInvoice>)get unBilledInvoicesChanged => _unBilledInvController.sink.add;
 
   getSr4unApprvdInvoices() async
   {
@@ -1013,67 +1307,285 @@ class Bloc extends Object with Validators
     sr4unApprInv.customerCode = _invAprCustomerController.value;
     sr4unApprInv.dateFrom = _invApDateFromController.value;
     sr4unApprInv.dateTo = _invApDateToController.value;
-    sr4unApprInv.invoiceType = _invApprvdPaymentController.value;     // Add Payment type stream controller and send to this field
+    sr4unApprInv.invoiceType = _invApprvdPaymentController.value;  
     _unApprvdInvController.sink.add(await invApi.getUnApprovedInvoices(sr4unApprInv));
+      
     // return sr4unApprInv;
   }
 
-  //     getSr4unApprvdInvoices() async
-  // {
-  //   InvoiceApi invApi = new InvoiceApi();
-  //   SrchUnApprdInvoice sr4unApprInv = new SrchUnApprdInvoice();
+  isInvoiceChecked(String invNo,bool isChked)
+  {
+    print('Invoice No. '+ invNo + ' - ' + (isChked ? 'true' : 'False'));
+    if(_unApprvdInvController.value != null)
+    {
+      //unInvList.addAll(_unApprvdInvController.value);
+      print('Invoice No1. '+ invNo + ' - ' + (isChked ? 'true' : 'False'));
+      for(UnApprovedInvoice uaInv in _unApprvdInvController.value) 
+      {
+        if(uaInv.invoiceNo.trim() == invNo.trim())
+        {
+          uaInv.isChecked = isChked;
+        }
+      }
+    }
+    _unApprvdInvController.sink.add(_unApprvdInvController.value);
+  }
+
+  List<SelectedInvoices> selectedInvs(String userid)
+  {
+    List<SelectedInvoices> selInvs = [];
+
+    //if(_unApprvdInvController.value != null)
+    if(_unBilledInvController.value != null)
+    {
+      //print('Invoice No1.'+invNo);
+      for(UnBilledInvoice uaInv in _unBilledInvController.value) 
+      {
+        if(uaInv.isChecked)
+        {
+          SelectedInvoices selinv = new SelectedInvoices();
+          selinv.branchID = StaticsVar.branchID;
+          selinv.invoiceNo = uaInv.invoiceNo.trim();
+          selinv.userID = userid;
+
+          selInvs.add(selinv);
+        }
+      }
+    }    
+    return selInvs;
+  }
+
+  List<SelectedInvoices> selectedInvs4Approval(String userid)
+  {
+    List<SelectedInvoices> selInvs = [];
+
+    //if(_unApprvdInvController.value != null)
+    if(_unApprvdInvController.value != null)
+    {
+      //print('Invoice No1.'+invNo);
+      for(UnApprovedInvoice uaInv in _unApprvdInvController.value) 
+      {
+        if(uaInv.isChecked)
+        {
+          SelectedInvoices selinv = new SelectedInvoices();
+          selinv.branchID = StaticsVar.branchID;
+          selinv.invoiceNo = uaInv.invoiceNo.trim();
+          selinv.userID = userid;
+
+          selInvs.add(selinv);
+        }
+      }
+    }
+    return selInvs;
+  }
+
+  clearInvApprove()
+  {
+    //String initdate = DateFormat("yyyy-MM-01").format(DateTime.now()).toString();
+    var date = DateTime.now(); 
+    _invAprCustomerController.sink.add(null);
+    //_invApDateFromController.sink.add(DateTime.tryParse(initdate));
+    _invApDateFromController.sink.add(DateTime(date.year, date.month, 1));
+    _invApDateToController.sink.add(DateTime.now());
+    _invApprvdPaymentController.sink.add('CASH');  
+    _unApprvdInvController.sink.add(null);
+  }
+
+  
+  getSr4UnBilledInvoices() async
+  {
+    InvoiceApi invApi = new InvoiceApi();
+    SrchUnApprdInvoice sr4UnBildInv = new SrchUnApprdInvoice();    
+    sr4UnBildInv.branchId = StaticsVar.branchID;
+    sr4UnBildInv.customerCode = _unBilldCustomerController.value;
+    sr4UnBildInv.dateFrom = _unBilldDateFormController.value;
+    sr4UnBildInv.dateTo = _unBilldDateToController.value; 
+    sr4UnBildInv.invoiceType = _unBilldPaymentController.value;  
+    _unBilledInvController.sink.add(await invApi.getUnBilledInvoices(sr4UnBildInv));
+  }
+
+  isUnbldInvoiceChecked(String invNo,bool isChkd)
+  {
+    print('Invoice No. '+ invNo + ' - ' + (isChkd ? 'true' : 'False'));
+    if(_unBilledInvController.value != null)
+    {
+      //unInvList.addAll(_unBilledInvController.value);
+      print('Invoice No1. '+ invNo + ' - ' + (isChkd ? 'true' : 'False'));
+      for(UnBilledInvoice uaInv in _unBilledInvController.value) 
+      {
+        if(uaInv.invoiceNo.trim() == invNo.trim())
+        {
+          uaInv.isChecked = isChkd;
+        }
+      }
+    }
+    _unBilledInvController.sink.add(_unBilledInvController.value);
+  }
+
+ List<SelectedInvoices> selectedUnbillInvs(String userid)
+  {
+    List<SelectedInvoices> selInvs = [];
+
+    if(_unBilledInvController.value != null)
+    {
+      //print('Invoice No1.'+invNo);
+      for(UnBilledInvoice uaInv in _unBilledInvController.value) 
+      {
+        if(uaInv.isChecked)
+        {
+          SelectedInvoices selinv = new SelectedInvoices();
+          selinv.branchID = StaticsVar.branchID;
+          selinv.invoiceNo = uaInv.invoiceNo.trim();
+          selinv.userID = userid;
+          selInvs.add(selinv);
+        }
+      }
+    }
     
-  //   sr4unApprInv.branchId = StaticsVar.branchID;
-  //   if(sr4unApprInv.customerCode != null) _invAprCustomerController.sink.add(sr4unApprInv.customerCode);
-  //   if( sr4unApprInv.dateFrom != null) _invApDateFromController.sink.add(sr4unApprInv.dateFrom);
-  //   if(sr4unApprInv.dateTo != null) _invApDateToController.sink.add(sr4unApprInv.dateTo);
-  //   if(sr4unApprInv.invoiceType != null) _invApprvdPaymentController.sink.add(sr4unApprInv.invoiceType);
-  //    _unApprvdInvController.sink.add(await invApi.getUnApprovedInvoices(sr4unApprInv));
-  //   // if(sr4unApprInv != null) _unApprvdInvController.sink.add(sr4unApprInv);    // Add Payment type stream controller and send to this field;
-  //   // if(sr4unApprInv.invoiceDetails != null) _unApprvdInvController.sink.add(sr4unApprInv.invoiceDetails);
-  //   // _unApprvdInvController.sink.add(await invApi.getUnApprovedInvoices(sr4unApprInv));
+    return selInvs;
+  }
+
+  clearUnbilledInv()
+  {
+    var date = DateTime.now(); 
+    _unBilldCustomerController.sink.add(null);
+    //_unBilldDateFormController.sink.add(DateTime.tryParse(initdate));
+    _unBilldDateFormController.sink.add(DateTime(date.year, date.month, 1));
+    _unBilldDateToController.sink.add(DateTime.now());
+    _unBilldPaymentController.sink.add(null);  
+    _unBilledInvController.sink.add(null);
+  }
+
+
+  // Customer invoice list
+  final _cusInvCusName =BehaviorSubject<String>();
+  final _cusInvAddressController =BehaviorSubject<String>();
+  final _cusInvCusDate =BehaviorSubject<DateTime>();
+  final _invNoController =BehaviorSubject<String>();
+  final _orderNoController =BehaviorSubject<String>();
+  final _itemNoController =BehaviorSubject<String>();
+  final _prodCodController =BehaviorSubject<String>();
+  final _prdDesController =BehaviorSubject<String>();
+  final _quontityController =BehaviorSubject<String>();
+  final _priceController =BehaviorSubject<String>();
+  final _cusInvAmtController =BehaviorSubject<String>();
+  final _cusDisAmtController =BehaviorSubject<String>();
+  final _cusVATController =BehaviorSubject<String>();
+  final _cusWHTaxController =BehaviorSubject<String>();
+  final _cusTotAmtController =BehaviorSubject<String>();
+  final _cusPaidAmtController =BehaviorSubject<String>();
+  final _cusBalAmtController =BehaviorSubject<String>();
+  final _cusinvDtlsController =BehaviorSubject<List<CustomerInvDts>>();
+
+  Stream<String> get cusInvAmt => _cusInvAmtController.stream.transform(emailValidator);
+  Stream<String> get cusDisAmt => _cusDisAmtController.stream.transform(emailValidator);
+  Stream<String> get cusVAT => _cusVATController.stream.transform(emailValidator);
+  Stream<String> get cusWHT => _cusWHTaxController.stream.transform(emailValidator);
+  Stream<String> get cusTotAmt => _cusTotAmtController.stream.transform(emailValidator);
+  Stream<String> get cusPaidAmt => _cusPaidAmtController.stream.transform(emailValidator);
+  Stream<String> get cusBalAmt => _cusBalAmtController.stream.transform(emailValidator);
+
+
+  Stream<String> get cusAddress => _cusInvAddressController.stream.transform(emailValidator);
+  Stream<String> get cusName => _cusInvCusName.stream.transform(emailValidator);
+  Stream<DateTime> get cusInvDate => _cusInvCusDate.stream.transform(dateTimeValidator);
+  Stream<String> get cusInvNo => _invNoController.stream.transform(emailValidator);
+  Stream<String> get cusInvOrderNo => _orderNoController.stream.transform(emailValidator);
+  Stream<String> get cusInvItemNo => _itemNoController.stream.transform(emailValidator);
+  Stream<String> get cusInvProdCode => _prodCodController.stream.transform(emailValidator);
+  Stream<String> get cusInvPrdDes => _prdDesController.stream.transform(emailValidator);
+  Stream<String> get cusInvQty => _quontityController.stream.transform(emailValidator);
+  Stream<String> get cusInvPrice => _priceController.stream.transform(emailValidator);
+  Stream<List<CustomerInvDts>> get cusInvDtls => _cusinvDtlsController.stream.transform(cusInvDtlsValidator);
+
+  Function(String) get cusInvAmtChanged => _cusInvAmtController.sink.add;
+  Function(String) get cusDisAmtChanged => _cusDisAmtController.sink.add;
+  Function(String) get cusVATChanged => _cusVATController.sink.add;
+  Function(String) get cusWHTChanged => _cusWHTaxController.sink.add;
+  Function(String) get cusTotAmtChanged => _cusTotAmtController.sink.add;
+  Function(String) get cusPaidAmtChanged => _cusPaidAmtController.sink.add;
+  Function(String) get cusBalAmtChanged => _cusBalAmtController.sink.add;
+
+
+  Function(String) get cusAddressChanged => _cusInvAddressController.sink.add;
+  Function(String) get cusNameNoChanged => _cusInvCusName.sink.add;
+  Function(DateTime) get cusInvDateChanged => _cusInvCusDate.sink.add;
+  Function(String) get cusInvNoChanged => _invNoController.sink.add;
+  Function(String) get cusInvOrderNoChanged => _orderNoController.sink.add;
+  Function(String) get cusInvItemNoChanged => _itemNoController.sink.add;
+  Function(String) get cusInvProdCodeChanged => _prodCodController.sink.add;
+  Function(String) get cusInvPrdDesChanged => _prdDesController.sink.add;
+  Function(String) get cusInvQtyChanged => _quontityController.sink.add;
+  Function(String) get cusInvPriceChanged => _priceController.sink.add;
+  Function(List<CustomerInvDts>) get cusInvDtlsChanged => _cusinvDtlsController.sink.add;
+
+   
+  fetchCusInvDtls(String invoiceNo) async
+  {
+    // if(invNo == null || invNo == ""){clearPO();}
+    // else{
+      _cusinvDtlsController.sink.add(null);
+            
+      InvoiceApi invApi = new InvoiceApi();
+      CustomerInvHd cusHD = await invApi.getCusInvList(StaticsVar.branchID,invoiceNo);
+        if(cusHD != null)
+          {
+            _invNoController.sink.add(cusHD.invoiceNo);
+            _cusInvAddressController.sink.add(getCustomerAddress(cusHD.customerCode.trim()));            
+            _orderNoController.sink.add(cusHD.orderNo);
+            _cusInvCusName.sink.add(cusHD.customerName.toString());
+            _cusInvCusDate.sink.add(cusHD.invoiceDate);
+            _cusInvAmtController.sink.add(cusHD.invoiceAmount.toString());
+            _cusDisAmtController.sink.add(cusHD.discountAmount.toString());
+            _cusVATController.sink.add(cusHD.vatAmount.toString());
+            _cusWHTaxController.sink.add(cusHD.whTaxPercent.toString());
+            _cusTotAmtController.sink.add(cusHD.totalAmount.toString());
+            _cusPaidAmtController.sink.add(cusHD.paidAmount.toString());
+            _cusBalAmtController.sink.add(cusHD.balanceAmount.toString());    
+            if(cusHD.invoiceDetails != null)
+            {_cusinvDtlsController.sink.add(cusHD.invoiceDetails);}    
+          }
+        // }
+  }
+
+  //    display4InvDtls(String invNo)
+  // {
+  //   //List<QuotationItems> listQuotItems = [];
+  //   for (CustomerInvDts invitems in _cusinvDtlsController.value)
+  //   { if(invitems.invoiceNo == invNo) 
+  //     {
+  //           _invNoController.sink.add(invitems.invoiceNo);
+  //            _orderNoController.sink.add(invitems.orderNo);
+  //            _itemNoController.sink.add(invitems.itemNo.toString());
+  //            _prodCodController.sink.add(invitems.productCode);
+  //            _prdDesController.sink.add(invitems.productDescription);
+  //            _quontityController.sink.add(invitems.quantity.toString());
+  //            _priceController.sink.add(invitems.price.toString());      
+  //     }
+  //   }
   // }
 
-
-  //   getSr4unApprvdInvoices() async
-  // {
-  //   InvoiceApi invApi = new InvoiceApi();
-  //   SrchUnApprdInvoice sr4unApprInv = new SrchUnApprdInvoice();
-    
-  //   sr4unApprInv.branchId = StaticsVar.branchID;
-  //   sr4unApprInv.customerCode = _invAprCustomerController.value;
-  //   sr4unApprInv.dateFrom = _invApDateFromController.value;
-  //   sr4unApprInv.dateTo = _invApDateToController.value;
-  //   sr4unApprInv.invoiceType = _invApprvdPaymentController.value;     // Add Payment type stream controller and send to this field
-
-  //   _unApprvdInvController.sink.add(await invApi.getUnApprovedInvoices(sr4unApprInv));
-  // }
+ 
 
 
-    //   getPODetilsforGoodsReceive() async 
-    // {
-    // GoodsReceiverApi grAPI = new GoodsReceiverApi();
-    // GoodsReceiverHD grHD = new GoodsReceiverHD();
 
-    // grHD = await grAPI.getPOforGoodsReceiver(_gRPOnoController.value);
-    // if (grHD.documentNo != null) _gRProdRectNOController.sink.add(grHD.documentNo);
-    // if (grHD.documentDate != null) _gRDateController.sink.add(grHD.documentDate);
-    // if (grHD.supplierCode != null) _gRVendorController.sink.add(grHD.supplierCode);
-    // if (grHD != null ) _gRHeaderController.sink.add(grHD);
-    // if (grHD.goodsReceivePoDetailList != null) _gRItemsController.sink.add(grHD.goodsReceivePoDetailList);
-    // }
 
   // Login Screen
   final _emailController =BehaviorSubject<String>();
   final _passwordController=  BehaviorSubject<String>();
-  // Login Screen
+  final _showPasswordController =BehaviorSubject<bool>();
+  Stream<bool> get showPwd => _showPasswordController.stream.transform(showPwdValidator);  
   Stream<String> get email => _emailController.stream.transform(emailValidator);
   Stream<String> get password => _passwordController.stream.transform(passwordlValidator);
-  Stream<bool> get submitCheck => Observable.combineLatest2(email, password, (e,p,)=>true); 
-  
-  // Login Screen
+  Stream<bool> get submitCheck => Observable.combineLatest2(email, password, (e,p,)=>true);
+  Function(bool) get showPwdChanged => _showPasswordController.sink.add;   
   Function(String) get emailChanged => _emailController.sink.add;
   Function(String) get passwordChanged => _passwordController.sink.add;
+
+  showPassword(bool showpwd)
+  {
+    _showPasswordController.sink.add(showpwd);
+  }
 
   // Supplier Tariff
   // Stream<List<Supplier>> get listViewDtls => _stSuppController.stream.transform(validatelistViewDtls);
@@ -1094,13 +1606,73 @@ class Bloc extends Object with Validators
 
   // }
 
+  fillPOContactPersonNAddrs() 
+  {
+    _poSuppCodeController.stream.listen((onData)
+    { 
+      _poContactPerController.sink.add(getSupplierContactPerson(onData));
+      _adressController.sink.add(getSupplierAddress(onData));
+    });
+
+    _poProdCodeDDpopupController.stream.listen((onData) async
+    {
+      ProductApiProvider prodApi = new ProductApiProvider();
+      Product prod = new Product();
+      prod = await prodApi.getProductDetail(_poSuppCodeController.value, onData);
+      _poUOMunitDDController.sink.add(prod.uom);
+      _unitPricePopupController.sink.add(prod.buyingPrice.toString());
+    });
+  }
+
   
+
+
+  getPOSummaryAmt(String amtType)
+  {
+      double amount = 0.00;
+      double totAmt = 0.00;
+      double otherChgs = 0.00;
+      double vatAmt = 0.00;
+
+      if(_poDetailsController.hasValue)
+      {
+        for (PurchaseOrderDetails poItem in _poDetailsController.value)
+        {
+          if(poItem.status)
+          {totAmt = totAmt + poItem.unitPrice * poItem.quantity;}     
+        }
+      }
+
+      if(_poVATController.hasValue) // if checked Vat then net = net + Vat
+        { if(_poVATController.value) 
+          { //print('VAT AMT ' ); 
+            vatAmt = ((totAmt) * (StaticsVar.vatPercent/100));
+        }} 
+      if(_poOtherChargesController.hasValue)
+        { //print('Other AMT ' ); 
+          if(_poOtherChargesController.value != "")
+            { otherChgs = double.parse(_poOtherChargesController.value.toString());}
+        }
+        
+      if(amtType == 'TOTAL')
+        {amount = totAmt;}
+      if(amtType == 'OTHER')
+        {amount = otherChgs;} 
+        // if net amt is zero then disc is having wrong value, Hence condition applied
+      if(amtType == 'NET')
+        {amount = totAmt + vatAmt + otherChgs;}
+      if(amtType == 'VAT')
+        {amount = vatAmt;}     
+      
+      return (double.parse(amount.toStringAsFixed(2)));   
+    }
+
   fetchPO(String poNum) async
   {
     if(poNum == null || poNum == ""){clearPO();}
     else{
       PurchaseOrederApi poApi = new PurchaseOrederApi();
-      PurchaeOrderHD poHD = await poApi.getPO(StaticsVar.branchID, poNum);
+      PurchaseOrderHD poHD = await poApi.getPO(StaticsVar.branchID, poNum);
         if(poHD != null)
           {
             _poSuppCodeController.sink.add(poHD.supplierCode.trim());
@@ -1108,7 +1680,7 @@ class Bloc extends Object with Validators
             _poDateController.sink.add(poHD.poDate);
             _suppNameController.sink.add(poHD.supplierName.trim());
             _poContactPerController.sink.add(poHD.contactPerson.trim());
-            //  _adressController.sink.add(poHD..trim());
+            _adressController.sink.add(getSupplierAddress(poHD.supplierCode.trim()));
             _shipingDateController.sink.add(poHD.shipmentDate);
             _estimateDateController.sink.add(poHD.estimateDate);
             _referenceNumController.sink.add(poHD.referenceNo.trim());
@@ -1117,20 +1689,25 @@ class Bloc extends Object with Validators
             _remarksController.sink.add(poHD.remarks.trim());
               if(poHD.purchaseOrderDetails != null)
               {_poDetailsController.sink.add(poHD.purchaseOrderDetails);}
-          // print('PoDate:' + poHD.poDate.toString());
-          // print('Shipment date:' + poHD.shipmentDate.toString());
-          // print('Estimate date:' + poHD.estimateDate.toString());
-
-          // print('PO Items Length: ' + poHD.purchaseOrderDetails.length.toString());
-
-
-          // print('Stream Name:' + _poSuppCodeController.value);
-          // print('PoDate:' + _poDateController.value.toString());
-          // print('Shipment date:' + _shipingDateController.value.toString());
-          // print('Estimate date:' + _estimateDateController.value.toString());
-          // print('Stream Items Length: ' + _poDetailsController.value.length.toString());
           }
         }
+  }
+
+
+   bool validateSupplierCode()
+  {
+    bool isSuppCodeAvailable = false;
+    
+    if(_poSuppCodeController.hasValue)
+    {
+      if(_poSuppCodeController.value != null && _poSuppCodeController.value != '')
+      {
+        isSuppCodeAvailable = true;
+      }
+    }
+
+                    
+    return isSuppCodeAvailable;    
   }
 
    display4EditPODtls(String poProdCode)
@@ -1158,20 +1735,19 @@ class Bloc extends Object with Validators
 
   clearPO()
   {
-     _poSuppCodeController.sink.add(null);
-      _poNumberController.sink.add(null);
-      _poDateController.sink.add(null);
-      _suppNameController.sink.add(null);
-      _poContactPerController.sink.add(null);
-      //  _adressController.sink.add(..);
-      _shipingDateController.sink.add(null);
-      _estimateDateController.sink.add(null);
-      _referenceNumController.sink.add(null);
-      _paymentController.sink.add(null);
-      _prNumController.sink.add(null);
-      _remarksController.sink.add(null);
-       _poDetailsController.sink.add(null);
-      
+    _poSuppCodeController.sink.add(null);
+    _poNumberController.sink.add(null);
+    _poDateController.sink.add(null);
+    _suppNameController.sink.add(null);
+    _poContactPerController.sink.add(null);
+    _adressController.sink.add(null);
+    _shipingDateController.sink.add(null);
+    _estimateDateController.sink.add(null);
+    _referenceNumController.sink.add(null);
+    _paymentController.sink.add(null);
+    _prNumController.sink.add(null);
+    _remarksController.sink.add(null);
+    _poDetailsController.sink.add(null);      
   }
 
   clearDisplay4PO()
@@ -1183,6 +1759,10 @@ class Bloc extends Object with Validators
     _poCurrencyPopupController.sink.add(null);
   }
 
+
+
+
+
   fetchQuotation(String quotNo) async
   { 
     if(quotNo == null || quotNo == ""){clearQuotationHD();}
@@ -1192,6 +1772,7 @@ class Bloc extends Object with Validators
       QuotationHd qtHD = await qtApi.getQuotation(StaticsVar.branchID, quotNo.trim());
       if(qtHD != null)
       {
+        _qCusNoController.sink.add(qtHD.quotationNo.trim());
         _qCusCCodeController.sink.add(qtHD.customerCode.trim());
         _qCusEffecDateController.sink.add(qtHD.effectiveDate);
         _qCusExprDateController.sink.add(qtHD.expiryDate);
@@ -1220,7 +1801,7 @@ class Bloc extends Object with Validators
     qoHD.effectiveDate= _qCusEffecDateController.value;
     qoHD.expiryDate= _qCusExprDateController.value;
     qoHD.customerCode= _qCusCCodeController.value;
-    qoHD.customerName= getCustomerName(_qCusCCodeController.value.trim());
+    qoHD.customerName= quotationType == 'CUSTOMER' ? getCustomerName(_qCusCCodeController.value.trim()) : getSupplierName(_qCusCCodeController.value.trim());
     qoHD.status= true;
     qoHD.createdBy= "admin";
     qoHD.createdOn= DateTime.now();
@@ -1234,38 +1815,48 @@ class Bloc extends Object with Validators
 
   clearQuotationHD()
   {
+    _qCusNoController.sink.add(null);
     _qCusEffecDateController.sink.add(null);
     _qCusExprDateController.sink.add(null);
     _qCusCCodeController.sink.add(null);
     _quotationItemsController.sink.add(null);
-
   }
 
   deleteQuotaionItem(String quotProdCode)
   {
     List<QuotationItems> listQuotItems = [];
     for (QuotationItems quotItem in _quotationItemsController.value)
-    {if(quotItem.productCode!=quotProdCode) { listQuotItems.add(quotItem);}}
-    _quotationItemsController.sink.add(listQuotItems);
-    _quotationItemsController.stream.listen((onData) => {});
+    { 
+      // if(quotItem.productCode!=quotProdCode) { listQuotItems.add(quotItem);}
+      // else {quotItem.status = false;}
+      if(quotItem.productCode.trim() == quotProdCode.trim() || !quotItem.status) 
+        { quotItem.status = false;} 
+      else { quotItem.status = true;}   
+       listQuotItems.add(quotItem);
+    }
+      _quotationItemsController.sink.add(listQuotItems);
+      //_quotationItemsController.stream.listen((onData) => {});
   }
 
-  display4EditQuotaionItem(String quotProdCode)
+  display4EditQuotaionItem(String quotProdCode, List<QuotationItems> quotItems)
   {
-    if(quotProdCode == null || quotProdCode == ""){clearDisplay4EditQuotItem();}
+    if(quotProdCode == null || quotProdCode == ""){print('Product details Clearing.......'); clearDisplay4EditQuotItem();}
     else{
+      if(_quotationItemsController.value == null){_quotationItemsController.sink.add(quotItems);}
+
       for (QuotationItems quotItem in _quotationItemsController.value)
       {
-        if(quotItem.productCode == quotProdCode)
-        { //listQuotItems.add(quotItem);
-          _qCusProdCodePUController.sink.add(quotItem.productCode);
+        // print('Product details printing.......');
+        //  print('PCODE: ' + quotItem.productCode );
+        //   print('CURRENCY : ' + quotItem.currencyCode );
+        //   print('SELL RATE : ' + quotItem.sellRate.toString());
+        if(quotItem.productCode.trim() == quotProdCode.trim())
+        {
+          _qCusProdCodePUController.sink.add(quotItem.productCode.trim());
           _qCusPaymentPUController.sink.add(quotItem.currencyCode);
           _qCusSellratePUController.sink.add(quotItem.sellRate.toString());
-          // print('PCODE: ' + quotItem.productCode );
-          // print('CURRENCY : ' + quotItem.currencyCode );
-          // print('SELL RATE : ' + quotItem.sellRate.toString());
         }
-    }
+      }
     }
     // _quotationItemsController.sink.add(listQuotItems);
     // _quotationItemsController.stream.listen((onData) => {});
@@ -1283,6 +1874,29 @@ class Bloc extends Object with Validators
     _qProdDescriptionController.sink.add(productDesc);
 
     return productDesc;
+  }
+
+  validateProductDuplicate(BuildContext context)
+  {
+    List<QuotationItems> listQuotItems = [];
+    _qCusProdCodePUController.stream.listen((onData) 
+    {       
+    if(_quotationItemsController.value != null)  //  || _quotationItemsController.hasValue)
+      { 
+        listQuotItems.addAll(_quotationItemsController.value); 
+        for(QuotationItems item in listQuotItems)
+        { 
+          if(item.productCode.trim() == onData.trim())
+          {
+            // StaticsVar.showAlert(context, 'Duplicate Product Selected');
+            _qCusPaymentPUController.sink.add(item.currencyCode);
+            _qCusSellratePUController.sink.add(item.sellRate.toString());
+
+          }
+        }
+      }
+     
+    });
   }
 
   addQuotationItems()
@@ -1344,6 +1958,31 @@ class Bloc extends Object with Validators
 
   // QUOTAION ENDS
 
+
+  // initInvDateFrom(bool isEditMode)
+  // {
+  //   // if(!isEditMode) { 
+  //     //_qCustEffDateCtrl.sink.add(DateTime.now().toString());
+  //     // var date = new DateTime.now();
+  //     _invApDateFromController.sink.add(DateTime.now());   
+        
+  // }
+  //   initInvDateTo(bool isEditMode)
+  // {
+  //     _invApDateToController.sink.add(DateTime.now());    
+  // }
+  
+  //  initUnbldInvDateFrom(bool isEditMode)
+  // {
+  //   // var date = new DateTime.now();
+  //   _unBilldDateFormController.sink.add(DateTime.now());
+  // }
+
+  //   initUnBldInvDateTo(bool isEditMode)
+  // {
+  //     _unBilldDateToController.sink.add(DateTime.now());    
+  // }
+
    initPODate(bool isEditMode)
   {
     // if(!isEditMode) { 
@@ -1351,6 +1990,26 @@ class Bloc extends Object with Validators
       _poDateController.sink.add(DateTime.now());
   }
 
+    initSalEntyDate(bool isEditMode)
+  {
+    // if(!isEditMode) { 
+      //_qCustEffDateCtrl.sink.add(DateTime.now().toString());
+      _seSalesDateController.sink.add(DateTime.now());
+  }
+
+     initinqInvDateFrm(bool isEditMode)
+  {
+    // if(!isEditMode) { 
+      //_qCustEffDateCtrl.sink.add(DateTime.now().toString());
+      _inqInvDateFromController.sink.add(DateTime.now());
+  }
+
+       initinqInvDateTo(bool isEditMode)
+  {
+    // if(!isEditMode) { 
+      //_qCustEffDateCtrl.sink.add(DateTime.now().toString());
+      _inqInvDateToController.sink.add(DateTime.now());
+  }
  
 
   initDatePromotion(bool isEditMode)
@@ -1432,12 +2091,16 @@ class Bloc extends Object with Validators
       SalesEntryHd salEnyHD = await poApi.getSalesEntry(StaticsVar.branchID, orderNum);
       if(salEnyHD != null)
       {
+        _seCustNoController.sink.add(salEnyHD.orderNo);
         _seCustCodeController.sink.add(salEnyHD.customerCode);
-        // _seCustAddressController.sink.add(salEnyHD.customerAddress);
+        _seCustAddressController.sink.add(getCustomerAddress(salEnyHD.customerCode.trim()));
         _seSalesDateController.sink.add(salEnyHD.orderDate);
         _seDelvDateController.sink.add(salEnyHD.deliveryDate);
         _sePaymentTypeController.sink.add(salEnyHD.paymentType);
         _seRemarksController.sink.add(salEnyHD.remarks);
+        _seVatController.sink.add(salEnyHD.isVat);
+        _seWHTaxController.sink.add(salEnyHD.isWhTax);
+        _sePaidAmntController.sink.add(salEnyHD.paidAmount.toString());
         // _seQtyController.inkadd(salEnyHD.customerCode);
         // _seUOMController.snkadd(salEnyHD.customerCode);
         // _seProdCodeControle.sink.add(salEnyHD.customerCode.);
@@ -1466,6 +2129,7 @@ class Bloc extends Object with Validators
           _seQtyController.sink.add(salEntyDtls.quantity.toString());
           // _seUOMController.sink.add(salEntyDtls.uom);
           _seProdCodeController.sink.add(salEntyDtls.productCode.toString());
+          _seSellRateController.sink.add(salEntyDtls.sellRate.toString());
           _seDiscountTypeController.sink.add(salEntyDtls.discountType);
           _seDiscountController.sink.add(salEntyDtls.discountAmount.toString());       
         }
@@ -1475,20 +2139,29 @@ class Bloc extends Object with Validators
 
   clearSalesEntry()
   {
+    _seCustAddressController.sink.add(null);
+    _seCustAddressController.sink.add(null);
+    _seCustNoController.sink.add(null);
     _seCustCodeController.sink.add(null);
-    _seSalesDateController.sink.add(null);
+    _seSalesDateController.sink.add(DateTime.now());
     _seDelvDateController.sink.add(null);
     _sePaymentTypeController.sink.add(null);
     _seRemarksController.sink.add(null);
+    _seVatController.sink.add(false);
+    _seWHTaxController.sink.add(false);
+    _sePaidAmntController.sink.add("0.0");
     _seDetailsController.sink.add(null);
   }
 
   clearDisplay4SE()
   {
+   // print('Clearing PoPup screen for SE....');
     _seQtyController.sink.add(null);
     _seProdCodeController.sink.add(null);
+    _seUOMController.sink.add(null);
+    _seSellRateController.sink.add(null);
     _seDiscountTypeController.sink.add('NONE');
-    _seDiscountController.sink.add('0.0');
+    _seDiscountController.sink.add(null);
   }
 
 
@@ -1723,6 +2396,7 @@ class Bloc extends Object with Validators
       poDtls.currencyCode = _poCurrencyPopupController.value;
       poDtls.productDescription = getProductName(_poProdCodeDDpopupController.value.trim());
       poDtls.unitPrice = double.parse( _unitPricePopupController.value);
+      poDtls.status = true;
       listPODtls.add(poDtls);
       _poDetailsController.sink.add(listPODtls);
       // _poDetailsController.stream.listen((onData) => {});
@@ -1787,17 +2461,18 @@ class Bloc extends Object with Validators
   
     for (PurchaseOrderDetails poDt in _poDetailsController.value)
     {
-      if(poDt.productCode!=poProdCode) { listPODtls.add(poDt);}
+      if(poDt.productCode.trim() == poProdCode.trim() || !poDt.status)
+      {poDt.status = false;} 
+      else {poDt.status = true;}
+      listPODtls.add(poDt);
     }
-
     _poDetailsController.sink.add(listPODtls);
-    _poDetailsController.stream.listen((onData) => {});
-    
+    _poDetailsController.stream.listen((onData) => {});    
   }
 
   getPurchaseOrder(String poNum)
   {
-    PurchaeOrderHD poHD = new PurchaeOrderHD();
+    PurchaseOrderHD poHD = new PurchaseOrderHD();
     poHD.poNo= poNum;
     poHD.poDate= _poDateController.value;
     poHD.branchId= StaticsVar.branchID;
@@ -1813,11 +2488,12 @@ class Bloc extends Object with Validators
     poHD.paymentTerm= _paymentController.value;
     poHD.paymentTermDescription= "" ;
     poHD.poStatus= true;
-    poHD.totalAmount= _getPOTotAmount();
-    poHD.otherCharges= 0;
-    poHD.isVat= false;
-    poHD.vatAmount= 0;
-    poHD.netAmount= _getPOTotAmount();
+    // poHD.totalAmount= _getPOTotAmount();
+    poHD.totalAmount=  getPOSummaryAmt('TOTAL');
+    poHD.otherCharges= getPOSummaryAmt('OTHER');
+    poHD.isVat= _poVATController.value;
+    poHD.vatAmount= getPOSummaryAmt('VAT');
+    poHD.netAmount=getPOSummaryAmt('NET');
     poHD.isCancel= false;
     poHD.remarks= _remarksController.value;
     poHD.contactPerson= _poContactPerController.value;
@@ -1829,15 +2505,10 @@ class Bloc extends Object with Validators
     return poHD;
   }
 
-  _getPOTotAmount()
+  poVatchecked()
   {
-    double totalval = 0;
-    for (PurchaseOrderDetails poDt in _poDetailsController.value)
-    {
-      double amount = poDt.quantity * poDt.unitPrice;
-      totalval = totalval + amount;
-    }
-    return totalval;
+    _poVATController.stream.listen((onSelect){_poDetailsController.sink.add(_poDetailsController.value);});
+    _poOtherChargesController.stream.listen((ondata){_poDetailsController.sink.add(_poDetailsController.value);});  
   }
 
   Users getLoginUser()
@@ -1879,7 +2550,7 @@ class Bloc extends Object with Validators
     description: _lookUpDesController.value,
     category: catgory,
     description2: "",
-    status: false,
+    status: true,
     );
     return uomSavDtls;
   }
@@ -1974,10 +2645,10 @@ Product saveCatInquryDD()
    return productSavDtls;
   }
 
-  InquiryModel saveInqdtls()
+  StockInquiry saveInqdtls()
   {
 
-     InquiryModel inqSaveDts =   InquiryModel(
+     StockInquiry inqSaveDts =   StockInquiry(
 
       productDescription:_branchInqDDController.value,
       productCategory: _proBarCodeController.value,
@@ -2122,10 +2793,14 @@ Product saveCatInquryDD()
 
   void dispose()
   {
+    // Search Options
+    _searchTxtFldController.close();
+    _searchOptionDDController.close();
 
   // Login Screen
   _emailController?.close();
   _passwordController?.close();
+  _showPasswordController.close();
       // _stSuppController.close();
   
   //Product List
@@ -2190,6 +2865,11 @@ Product saveCatInquryDD()
   _suppliercatInqDDController.close();
   _productInqDDController.close();
   _inquiryDtlsController.close();
+  _stockInqDtlsController.close();
+  _inqInvCusmrController.close();
+  _inqInvDateFromController.close();
+  _inqInvDateToController.close();
+  _inqInvPaymentTypController.close();
 
 
 
@@ -2226,6 +2906,11 @@ Product saveCatInquryDD()
     _customerListController.close();
 
 // Purchase order
+
+    _poTotalAmountController.close();
+    _poOtherChargesController.close();
+    _poVATController.close();
+    _poNetAmtController.close();    
     _poSuppCodeController.close();
     _poNumberController.close();
     _poDateController.close();
@@ -2256,6 +2941,7 @@ Product saveCatInquryDD()
    _qSellRateController.close();
    _qSPaymentController.close();
 
+   _qCusNoController.close();
    _qCusCCodeController.close();
    _qCusEffecDateController.close();
    _qCusExprDateController.close();
@@ -2263,6 +2949,7 @@ Product saveCatInquryDD()
    _qCusSellratePUController.close();
    _qCusPaymentPUController.close();
    _qCustEffDateCtrl.close();
+   _qCustomerQuotListCtrl.close();
 
    _qSupDropDwnController.close();
    _qSupEffecDateController.close();
@@ -2284,6 +2971,7 @@ Product saveCatInquryDD()
    _gRItemsController.close();
 
   // Sales entry Bloc
+   _seCustNoController.close();
    _seCustCodeController.close();
    _seCustAddressController.close();
    _seSalesDateController.close();
@@ -2294,21 +2982,49 @@ Product saveCatInquryDD()
    _seUOMController.close();
    _seProdCodeController.close();
    _seDiscountTypeController.close();
+   _seSellRateController.close();
    _seDiscountController.close();
    _seHeaderController.close();
    _seDetailsController.close();    
+   _sePaidAmntController.close();
+   _seVatController.close();
+   _seWHTaxController.close();
    
-
-  // billing
+  //dashBoard
+    _dbIndexController.close();
+    _dbTotalSalesController.close();
+    _dashBoardController.close();
+  // billing  
+   _cusInvAmtController.close();
+   _cusDisAmtController.close();
+   _cusVATController.close();
+   _cusWHTaxController.close();
+   _cusTotAmtController.close();
+   _cusPaidAmtController.close();
+   _cusBalAmtController.close();
    _invAprCustomerController.close();
+   _cusInvAddressController.close();
    _invApDateFromController.close();
    _invApDateToController.close();
    _invApprvdPaymentController.close();
+   _isInvSelectedController.close();
    _unBilldCustomerController.close();
    _unBilldDateFormController.close();
    _unBilldDateToController.close();
    _unBilldPaymentController.close();
    _unApprvdInvController.close();
+   _unBilledInvController.close();
+  //  invoice customer details
 
+   _cusInvCusName.close();
+   _cusInvCusDate.close();
+   _invNoController.close();
+   _orderNoController.close();
+   _itemNoController.close();
+   _prodCodController.close();
+   _prdDesController.close();
+   _quontityController.close();
+   _priceController.close();
+   _cusinvDtlsController.close();
   }
 }

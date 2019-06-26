@@ -1,17 +1,12 @@
 import 'dart:async';
-
 import 'package:http/http.dart' show Client;
 import 'package:http/http.dart';
 import 'package:split/Bloc/CommonVariables.dart';
 import 'dart:convert';
-
 import 'package:split/src/Models/quotationModel.dart';
-
-// import 'package:split/src/Models/promotionModel.dart';
 
 class QuotationApiProvider
 {
-
   Client client =  new Client();
   String root = StaticsVar.root;
   
@@ -52,8 +47,6 @@ class QuotationApiProvider
     } else {throw Exception('Failed to List Quotation');}
   }
 
-
-
   Future<List<QuotationHd>> quotationSupplierList(int brnId) async
   {
     List<QuotationHd> quotList;
@@ -89,11 +82,9 @@ class QuotationApiProvider
   }
 
 
-
-
-
-   //  Saving Promotion data
-    Future<bool> saveCustQuotaion(QuotationHd qHD) async {
+   //  Saving QUOTATION data
+    Future<bool> saveCustQuotaion(QuotationHd qHD) async 
+    {
       String root = StaticsVar.root;
       String url = '$root/api/tariff/quotation/savequotation';
       bool respVal = false;
@@ -101,17 +92,14 @@ class QuotationApiProvider
       print(quotHD);
       var future = client.post(url,body:quotHD,headers: {"Accept": "application/json", "content-type": "application/json" });
       final response = await future;
-      print(response.body);
+      //print(response.body);
       if(response.statusCode == 200){
         var isUomDtsSuccess = json.decode(response.body);
         respVal = isUomDtsSuccess ? true : false;
         return respVal;
-      }else  throw Exception('Failed to Save LookUp List');
+      } else throw Exception("Active quotations found for this ${qHD.quotationType}");
 
-  }
-
-
-  
+    }
 
   // Delete data
   Future<bool> delQuotList(String usrId, int brId,String quotnNo) async 
@@ -121,25 +109,11 @@ class QuotationApiProvider
     bool respVal = true;
     var future = client.get(url,headers: {"Accept": "application/json", "content-type": "application/json" });
     final response = await future;
-    print(response.body);
+    //print(response.body);
     if(response.statusCode == 200){
       var isPromotionDtls = json.decode(response.body);
       respVal = isPromotionDtls ? true : false;
       return respVal;
     }else throw Exception('Item not Deleted');
   }
-
-  
-
-
-
-
-
-
-
-
-
-
-
-
 }

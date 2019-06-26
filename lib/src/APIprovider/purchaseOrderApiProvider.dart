@@ -11,26 +11,23 @@ class PurchaseOrederApi
   Client client =  new Client();
   String root = StaticsVar.root;
 
-  Future<List<PurchaeOrderHD>> pOList() async
+  Future<List<PurchaseOrderHD>> pOList() async
   {
-    List<PurchaeOrderHD> poList;
+    List<PurchaseOrderHD> poList;
     String url = '$root/api/operation/purchaseorder/list/160';
     var future = client.get(url,headers:{"Accept": "application/json","content-type": "application/json"});
     final response = await future;
-
     if(response.statusCode==200)
     {
       List showUom = json.decode(response.body);
-      poList = showUom.map((po) => PurchaeOrderHD.fromJson(po)).toList();
+      poList = showUom.map((po) => PurchaseOrderHD.fromJson(po)).toList();
       return poList;
     }else {throw Exception('Failed to show UomList');}
   }
 
-  
-
 
   //  Saving Purchase Order
-    Future<bool> savePO(PurchaeOrderHD poHd) async 
+    Future<bool> savePO(PurchaseOrderHD poHd) async 
     {
       String url = '$root/api/operation/purchaseorder/save';
       bool respVal = false;
@@ -67,18 +64,20 @@ class PurchaseOrederApi
   }
 
     // get PO 
-  Future<PurchaeOrderHD> getPO(int brnId,String poNum) async
+  Future<PurchaseOrderHD> getPO(int brnId,String poNum) async
   {
-    PurchaeOrderHD poMaster;
+    PurchaseOrderHD poMaster;
     String url = '$root/api/operation/purchaseorder/getpo/$brnId/$poNum';
     var future = client.get(url,headers:{"Accept": "application/json","content-type": "application/json"});
     final response = await future;
     if(response.statusCode==200){
        var showPO = json.decode(response.body);
-      poMaster =  new PurchaeOrderHD.fromJson(showPO);
+      poMaster =  new PurchaseOrderHD.fromJson(showPO);
       return poMaster;
     }else {throw Exception('Failed to Edit');}
   }
+
+
 
 
 

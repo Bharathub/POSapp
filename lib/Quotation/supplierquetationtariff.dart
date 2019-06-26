@@ -38,9 +38,10 @@ class _SuppliertariffState extends State<SuppliertariffQuotation>
     //   { 
         intCount = intCount+1; print('No Of Times Executed: ' + intCount.toString()); 
         if(intCount==1) 
-        { bloc.initiateProducts(); 
-          bloc.initiateCurrencys(); 
-          bloc.initiateSuppliers(); 
+        { bloc.initiateProducts(true); 
+          bloc.initiateCurrencys(true); 
+          bloc.initiateSuppliers(true); 
+          bloc.validateProductDuplicate(context);
           bloc.fetchQuotation(widget.quotNo);}
           // }
 
@@ -65,7 +66,7 @@ class _SuppliertariffState extends State<SuppliertariffQuotation>
             // color: Color(0xffecf0f1),
             child: Column(
               children: <Widget>[
-                SizedBox(height: 50.0),
+                qSupNotxtFld(bloc),
                 supplierDD(bloc),
                 cusEffecDate(bloc, !isInEditMode),
                 cusExpiryDate(bloc),
@@ -74,10 +75,8 @@ class _SuppliertariffState extends State<SuppliertariffQuotation>
                 Text("Product List",style: TextStyle(fontSize: 24.0,)),
                 addBtn(context, bloc),
                   ],
-                ),
-               
-                Container( height: 350.0,child: listTile(bloc),),
-                // saveBtn(context,bloc, widget.loginInfo,widget.quotNo),
+                ),               
+                Container( height: 320.0,child: listTile(bloc),),
               ],
             ),
       ),
@@ -101,10 +100,7 @@ class _SuppliertariffState extends State<SuppliertariffQuotation>
     return FlatButton(
       color: Colors.red,
       child: Text('Add',style:TextStyle(color: Colors.white)),
-      onPressed: () {
-           _showDialog(context, bloc);
-            // dalogBox(context);
-          },
+      onPressed: () { bloc.clearDisplay4EditQuotItem();  _showDialog(context, bloc);},
     );
   }
 
@@ -112,7 +108,7 @@ class _SuppliertariffState extends State<SuppliertariffQuotation>
   dispProductDetails(BuildContext context, Bloc bloc)
   {
     return  SingleChildScrollView(
-      child: Container(margin: EdgeInsets.only(top: 120.0, left: 10.0, right: 10.0),
+      child: Container(margin: EdgeInsets.all(10.0),
               child: Center( 
                       // child: Card(
                       //         elevation: 10,
@@ -134,7 +130,7 @@ class _SuppliertariffState extends State<SuppliertariffQuotation>
 
   productdownValue(Bloc bloc)
   {  
-    bloc.initiateProducts();
+    bloc.initiateProducts(false);
     //ProductApiProvider wlApi = new ProductApiProvider();
     //LookUpApiProvider proApi = LookUpApiProvider();
                         
@@ -171,7 +167,7 @@ class _SuppliertariffState extends State<SuppliertariffQuotation>
 
 stdQtnpopupCurrency(Bloc bloc)
 {
-  bloc.initiateCurrencys();
+  bloc.initiateCurrencys(false);
     //CurrencyApiProvider payApi = new CurrencyApiProvider();
     return StreamBuilder<String>(
       stream: bloc.qCusPaymentPU,
@@ -257,10 +253,10 @@ void _showDialog(BuildContext context, Bloc bloc) {
   }
 
   Widget showPopUpList(BuildContext contxt, Bloc bloc) {
-    return Container( width: 250, height: 400, 
+    return Container( width: 250, height: 275, 
         // decoration: BoxDecoration(border: Border.all(color: Colors.blueGrey), 
         //               shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(5.0)),
-        padding: EdgeInsets.only(left:10.00, right:5.00),
+        padding: EdgeInsets.all(10.0),
         //elevation: 24,
         child:
         Column(
@@ -272,10 +268,27 @@ void _showDialog(BuildContext context, Bloc bloc) {
     );
   }
 
+  qSupNotxtFld(Bloc bloc)
+  {
+    TextEditingController _controller = new TextEditingController();
+    return StreamBuilder(
+                stream: bloc.qCusNoCode,
+                builder:(context,snapshot){
+                if(snapshot.hasData)
+                {_controller.value = _controller.value.copyWith(text: snapshot.data.toString());}
+               return SizedBox(width: 300.0,
+                child: TextField(
+                  onChanged: bloc.qCusNoCodeChanged,
+                  controller: _controller, 
+                  enabled: false,
+                  decoration: InputDecoration(labelText: 'Quotation No.'),) );});
+
+  }
+
   supplierDD(Bloc bloc)
   {
-    // SupplierApiProvider payApi = new SupplierApiProvider();
-      return StreamBuilder<String>(
+    bloc.initiateSuppliers(false);
+    return StreamBuilder<String>(
         stream: bloc.qCusCCode,
         builder: (context,snapshot)
         {
@@ -401,8 +414,8 @@ void _showDialog(BuildContext context, Bloc bloc) {
       return ListView.builder(
           itemCount: poData.length,
           itemBuilder: (context, index) 
-          { return Container(height: 80.0,padding: EdgeInsets.only(top:15.0),
-              child: Card(
+          { return poData[index].status ? Container(height: 90.0,padding: EdgeInsets.only(top:15.0),
+              child:  Card(
                 margin: EdgeInsets.only(right: 5.0, left: 5.0),
                 elevation: 10.0,
                 child: ListTile(
@@ -413,7 +426,7 @@ void _showDialog(BuildContext context, Bloc bloc) {
                   ],),
                   trailing:Row(mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-                      IconButton( icon: Icon(Icons.edit), onPressed:(){ bloc.display4EditQuotaionItem(poData[index].productCode.trim()); _showDialog(context, bloc);}),
+                      IconButton( icon: Icon(Icons.edit), onPressed:(){ bloc.display4EditQuotaionItem(poData[index].productCode.trim(),poData); _showDialog(context, bloc);}),
                     IconButton( icon: Icon(Icons.delete), onPressed:(){ bloc.deleteQuotaionItem(poData[index].productCode.trim());
                         StaticsVar.showAlert(context, "Product Deleted"); }),
                     ],
@@ -438,7 +451,8 @@ void _showDialog(BuildContext context, Bloc bloc) {
                       ],
                     )),
                   )),
-              )); 
+              ) 
+              ): Container(); 
         });
     //} else { return Center(child:CircularProgressIndicator());}
     });

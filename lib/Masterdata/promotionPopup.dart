@@ -35,7 +35,7 @@ class _PrmotionpopupState extends State<Prmotionpopup>
     // if(isInEditMode) 
     // { 
       intCount = intCount+1; print('No Of Times Executed: ' + intCount.toString()); 
-      if(intCount==1) {bloc.initiateProducts(); bloc.fetchPromotion(widget.promoID);}
+      if(intCount==1) {bloc.initiateProducts(true); bloc.fetchPromotion(widget.promoID);}
     // }
 
     // bloc.setPromotionDtls(widget.effecDate,widget.exprDate);

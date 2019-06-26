@@ -60,7 +60,7 @@ class _SalesEntryState extends State<SalesEntryList>{
             return ListView.builder(
             itemCount: sspo.data.length,
             itemBuilder: (context, index) {
-            return Container(height: 100.0,padding: EdgeInsets.only(top:10.0),
+            return Container(height: 120.0,padding: EdgeInsets.only(top:10.0),
               child: Card( 
                 margin: EdgeInsets.only(right: 8.0, left: 8.0),
                 elevation: 10.0,
@@ -74,20 +74,26 @@ class _SalesEntryState extends State<SalesEntryList>{
                       alignment: Alignment.topLeft,
                       child: Column(
                         children: <Widget>[
-
                           Row(
                           children: <Widget>[
                             Expanded(flex: 4,child: Text('Customer Name:')),
                             Expanded(flex: 6,child: Text(sspo.data[index].customerName.toString()),),
                           ],),
-
                           Row(children: <Widget>[
-                            Expanded(flex: 5,child: Text('Date:')),
-                            Expanded(flex: 5,child: Text(DateFormat('dd/MM/yyyy').format(sspo.data[index].orderDate).toString()),),
+                            Expanded(flex: 4,child: Text('Date:')),
+                            Expanded(flex: 6,child: Text(DateFormat('dd/MM/yyyy').format(sspo.data[index].orderDate).toString()),),
+                          ],),
+                          Row(children: <Widget>[
+                            Expanded(flex: 4,child: Text('Payment Type:')),
+                            Expanded(flex: 6,child: Text(sspo.data[index].saleType),),
+                          ],),
+                          Row(children: <Widget>[
+                            Expanded(flex: 4,child: Text('Net Amount:')),
+                            Expanded(flex: 5,child: Text(sspo.data[index].netAmount.toString()),),  
                             Expanded(flex: 1, child: IconButton(
-                            icon:  Icon(Icons.delete),
+                            icon: sspo.data[index].status ? Icon(Icons.delete) : Container(),
                             onPressed: () async
-                          {
+                            {
                             SalesEntryApi seApi = new SalesEntryApi();
                               await (seApi.delSeList(sspo.data[index].branchId,sspo.data[index].orderNo,widget.loginInfo.userID)).then((onValue)
                                 {
@@ -125,7 +131,8 @@ class _SalesEntryState extends State<SalesEntryList>{
                     ),),
                     trailing: Column(
                       children: <Widget>[
-                        Text(sspo.data[index].status ? "ACTIVE" : 'DELETED',style: TextStyle(color: Colors.red),),
+                        Text(sspo.data[index].status ? "ACTIVE" : 'DELETED',style: sspo.data[index].status ? TextStyle(color: Colors.red): TextStyle(color: Colors.green),),
+                        //  Text(sspo.data[index].isCancel ? "DELETED" : 'ACTIVE',style:sspo.data[index].isCancel ? TextStyle(color: Colors.red): TextStyle(color: Colors.green),),
 
                         // SizedBox.shrink(child:IconButton(
                         //   icon:  Icon(Icons.delete),

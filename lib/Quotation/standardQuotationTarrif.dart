@@ -35,7 +35,12 @@ class _StandardTariffState extends State<StandardTariffQuotation>
     // if(isInEditMode) 
     //   { 
         intCount = intCount+1; print('No Of Times Executed: ' + intCount.toString()); 
-        if(intCount==1) {bloc.initiateProducts(); bloc.initiateCurrencys();  bloc.fetchQuotation(widget.quotNo);}
+        if(intCount==1) {
+          bloc.initiateProducts(true); 
+          bloc.initiateCurrencys(true); 
+          bloc.initiateCustomers(true); 
+          bloc.validateProductDuplicate(context);
+          bloc.fetchQuotation(widget.quotNo);}
         // }
 
     return MaterialApp(
@@ -51,13 +56,14 @@ class _StandardTariffState extends State<StandardTariffQuotation>
             ),
           ),
 
-        body:SingleChildScrollView(
-          child:Center(
+        body:
+        SingleChildScrollView(
+          child:
+          Container(
             // color: Color(0xffecf0f1),
             child: Column(
               children: <Widget>[
-                SizedBox(height: 50.0),
-                // supplierDD(bloc),
+                qStdNotxtFld(bloc),
                 cusEffecDate(bloc, !isInEditMode),
                 // SizedBox(width: 300.0,child:Divider(color: Colors.red,height: 15.0,),),
                 cusExpiryDate(bloc),
@@ -66,15 +72,13 @@ class _StandardTariffState extends State<StandardTariffQuotation>
                   Text("Product List",style: TextStyle(fontSize: 24.0,)),
                   addBtn(context, bloc)
                 ],),
-               
-                Container( height: 400.0,child: listTile(bloc),),
+                Divider(color: Colors.green),
+               Container(height: 320.0,child: listTile(bloc),)
                 // saveBtn(context,bloc, widget.loginInfo,widget.quotNo),
               ],
-            ),
-           
-     
-      ),
-    ),
+            ),                
+          ),
+        ),
       //  floatingActionButton: FloatingActionButton(
       //     heroTag: 'btn3',
       //     backgroundColor: Color(0xffd35400),
@@ -96,10 +100,7 @@ class _StandardTariffState extends State<StandardTariffQuotation>
     return FlatButton(
       color: Colors.red,
       child: Text('Add',style:TextStyle(color: Colors.white)),
-      onPressed: () {
-           _showDialog(context, bloc);
-            //dialogBox(context);
-          },
+      onPressed: () { bloc.clearDisplay4EditQuotItem(); _showDialog(context, bloc);},
     );
   }
 
@@ -108,7 +109,7 @@ class _StandardTariffState extends State<StandardTariffQuotation>
   {
     return  SingleChildScrollView(
       child: Container(
-        margin: EdgeInsets.only(top: 120.0, left: 10.0, right: 10.0),
+        margin: EdgeInsets.all(10.0),
         child: Center(
           child: Column(
             children: <Widget>[
@@ -120,25 +121,25 @@ class _StandardTariffState extends State<StandardTariffQuotation>
               ),
             ),
           ),
-    );
-
+        );
   }
 
 
   productdownValue(Bloc bloc)
   {
-    bloc.initiateProducts();                           
+    bloc.initiateProducts(false);                           
     return StreamBuilder<String>(
       stream: bloc.qCusProdCodePU,
       builder: (context,snapshot)
       {
-      return StreamBuilder(
+      return StreamBuilder<List<Product>>(
         stream:bloc.initProducts,
         builder: (context,ssWLDD)
         { 
         if (ssWLDD.hasData)
             {
-            //  bloc.initiateProductList(ssWLDD.data);                
+            //  bloc.initiateProductList(ssWLDD.data);   
+            print('Product Length ' + ssWLDD.data.length.toString());             
             return SizedBox(width: 300, child: InputDecorator(decoration: InputDecoration(labelText: 'Product Code'),
               child:DropdownButtonHideUnderline(
                 child:  DropdownButton<String>(
@@ -161,7 +162,7 @@ class _StandardTariffState extends State<StandardTariffQuotation>
 
   stdQtnpopupCurrency(Bloc bloc)
   {
-     bloc.initiateCurrencys();
+     bloc.initiateCurrencys(false);
       return StreamBuilder<String>(
         stream: bloc.qCusPaymentPU,
         builder: (context,snapshot)
@@ -241,10 +242,10 @@ Widget saveFlatbtn(BuildContext context, Bloc bloc)
     }
 
   Widget showPopUpList(BuildContext contxt, Bloc bloc) {
-    return Container( width: 250, height: 400, 
+    return Container( width: 250, height: 275, 
         // decoration: BoxDecoration(border: Border.all(color: Colors.blueGrey), 
         //               shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(5.0)),
-        padding: EdgeInsets.only(left:10.00, right:5.00),
+        padding: EdgeInsets.all(10.0),
         //elevation: 24,
         child:
         Column(
@@ -258,8 +259,8 @@ Widget saveFlatbtn(BuildContext context, Bloc bloc)
 
   supplierDD(Bloc bloc)
   {
-    //SupplierApiProvider payApi = new SupplierApiProvider();
-      return StreamBuilder<String>(
+    bloc.initiateSuppliers(false);
+       return StreamBuilder<String>(
         stream: bloc.qCusCCode,
         builder: (context,snapshot)
         {
@@ -287,6 +288,24 @@ Widget saveFlatbtn(BuildContext context, Bloc bloc)
             } else { return CircularProgressIndicator(); }
         });
       });
+  }
+
+
+  qStdNotxtFld(Bloc bloc)
+  {
+    TextEditingController _controller = new TextEditingController();
+    return StreamBuilder(
+                stream: bloc.qCusNoCode,
+                builder:(context,snapshot){
+                if(snapshot.hasData)
+                {_controller.value = _controller.value.copyWith(text: snapshot.data.toString());}
+               return SizedBox(width: 300.0,
+                child: TextField(
+                  onChanged: bloc.qCusNoCodeChanged,
+                  controller: _controller, 
+                  enabled: false,
+                  decoration: InputDecoration(labelText: 'Quotaion No.'),) );});
+
   }
 
   cusEffecDate(Bloc bloc, bool isInEditMode)
@@ -356,7 +375,7 @@ Widget saveFlatbtn(BuildContext context, Bloc bloc)
     child: RaisedButton(
         color: Color(0xffd35400),
         elevation: 5.0,
-        child: Text('Save', style: TextStyle(color: Colors.white),),
+        child: Text('SAVE', style: TextStyle(color: Colors.white),),
         onPressed: () async { 
           QuotationApiProvider  poAPI = new QuotationApiProvider();
           await poAPI.saveCustQuotaion(bloc.getQuotationHD("CUSTOMER",quotNo))
@@ -379,7 +398,7 @@ Widget saveFlatbtn(BuildContext context, Bloc bloc)
       return ListView.builder(
           itemCount: poData.length,
           itemBuilder: (context, index) 
-          { return Container(height: 80.0,padding: EdgeInsets.only(top:15.0),
+          { return poData[index].status ?  Container(height: 80.0,padding: EdgeInsets.only(top:15.0),
               child: Card(
                 margin: EdgeInsets.only(right: 5.0, left: 5.0),
                 elevation: 10.0,
@@ -389,13 +408,18 @@ Widget saveFlatbtn(BuildContext context, Bloc bloc)
                     Expanded(flex: 6,child: Text(poData[index].productDescription),),
                   ],),
                   //  Text('Product : ' + poData[index].productCode),
+                  onTap:()
+                  {
+                    //print('Product COde: ' + poData[index].productCode + '@');
+                    bloc.display4EditQuotaionItem(poData[index].productCode.trim(),poData); _showDialog(context, bloc);
+                  } ,
                   trailing:  Row( mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
-             IconButton( icon: Icon(Icons.edit), onPressed:(){ bloc.display4EditQuotaionItem(poData[index].productCode.trim()); _showDialog(context, bloc);} ),
+            //  IconButton( icon: Icon(Icons.edit), onPressed:(){ print('Product COde: ' + poData[index].productCode + '@');
+              //  bloc.display4EditQuotaionItem(poData[index].productCode.trim()); _showDialog(context, bloc);} ),
             // SizedBox(height: 5.0),
-           IconButton( icon: Icon(Icons.delete), onPressed:(){ bloc.deleteQuotaionItem(poData[index].productCode.trim());
+                      IconButton( icon: Icon(Icons.delete), onPressed:(){bloc.deleteQuotaionItem(poData[index].productCode.trim());
                         StaticsVar.showAlert(context, "Product Deleted"); })
-                         
                     ],
                       ),
 
@@ -406,21 +430,21 @@ Widget saveFlatbtn(BuildContext context, Bloc bloc)
                       child: Column(
                       children: <Widget>[
                          Row(children: <Widget>[
-                    Expanded(flex: 4,child: Text('Sell Rate:' ),),
-                    Expanded(flex: 6,child: Text(poData[index].sellRate.toString()),),
-                  ],),
-                  Row(children: <Widget>[
-                    Expanded(flex: 4,child: Text('Currency Code:' ),),
-                    Expanded(flex: 6,child: Text(poData[index].currencyCode),),
-                  ],),
-                      
-                        // SizedBox(width: 250,child: Text('Sell Rate:    ' + poData[index].sellRate.toString())),
-                        // SizedBox(width: 250,child:Text('Currency Code:    ' + poData[index].currencyCode)),
+                          Expanded(flex: 4,child: Text('Sell Rate:' ),),
+                          Expanded(flex: 6,child: Text(poData[index].sellRate.toString()),),
+                        ],),
+                        Row(children: <Widget>[
+                          Expanded(flex: 4,child: Text('Currency Code:' ),),
+                          Expanded(flex: 6,child: Text(poData[index].currencyCode),),
+                        ],),
                       ],
-                    )),
-                  )),
-              )); 
-        });
+                  )
+                ),
+               )
+              ),
+             ) 
+            ) : Container(); 
+           });
     //} else { return Center(child:CircularProgressIndicator());}
     });
   }

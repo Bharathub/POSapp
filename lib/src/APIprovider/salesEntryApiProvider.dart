@@ -14,7 +14,6 @@ class SalesEntryApi{
     List<SalesEntryHd> seList;
     String url = '$root/api/operation/salesorder/list/$brID';
     var future = client.get(url,headers:{"Accept": "application/json","content-type": "application/json"});
-
     final response = await future;
     if(response.statusCode==200){
       List showSE = json.decode(response.body);
@@ -23,14 +22,15 @@ class SalesEntryApi{
     }else {throw Exception('Failed to show Sales Entry');}
   }
 
-  Future<SalesEntryDetails> getSalesEntryItem(int brID, String custCode, String prodCode, String qty) async{
-    SalesEntryDetails seDetail;  
+  Future<List<SalesEntryDetails>> getSalesEntryItem(int brID, String custCode, String prodCode, String qty) async{
+    List<SalesEntryDetails> seDetail;  
     String url = '$root/api/operation/salesorder/addproducttogrid/$brID/$custCode/$prodCode/$qty';
+    // print(url);
     var future = client.get(url,headers:{"Accept": "application/json","content-type": "application/json"});
     final response = await future;
     if(response.statusCode==200){
-      var grVal = json.decode(response.body);
-      seDetail = SalesEntryDetails.fromJson(grVal);
+      List seDetls = json.decode(response.body);
+      seDetail = seDetls.map((sed) => SalesEntryDetails.fromJson(sed)).toList();
       return seDetail;
     } else {throw Exception('Failed to Retrive Sales Entry Details');}
   }
@@ -84,6 +84,4 @@ class SalesEntryApi{
       return poMaster;
     }else {throw Exception('Failed to Edit');}
   }
-
-
 }

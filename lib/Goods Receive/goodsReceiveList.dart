@@ -62,10 +62,10 @@ class _ListCardsState extends State<GoodsReceiveList>
             Expanded(flex: 5,child: Text('Document No.:')),
             Expanded(flex: 5,child: Text( ssGR.data[index].documentNo.trim()),)
           ],),
-          // onTap: (){
-          //   Navigator.push(context, MaterialPageRoute(builder: (context) => 
-          //   GoodsReceive(loginInfo: widget.loginInfo,poNum: ssGR.data[index].documentNo.trim())));
-          // },
+          onTap: (){
+            Navigator.push(context, MaterialPageRoute(builder: (context) => 
+            GoodsReceive(loginInfo: widget.loginInfo, documentNo: ssGR.data[index].documentNo.trim())));
+          },
           // trailing: Column(
           //   children: <Widget>[
           //     // Text(ssGR.data[index].poStatus ? "ACTIVE" : 'DELETED',style: TextStyle(color: Colors.red),),

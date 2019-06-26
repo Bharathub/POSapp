@@ -33,7 +33,7 @@ class _ListCardsState extends State<ProductPage> {
               },
             ),
           ),
-          body:SingleChildScrollView(child: Container(height: 620, child: listTile(bloc),)),
+          body:Container(child: listTile(bloc)),
           
           floatingActionButton: FloatingActionButton(
           backgroundColor: Color(0xffd35400),
@@ -44,72 +44,64 @@ class _ListCardsState extends State<ProductPage> {
       ),
 
     ); 
-}
+  }
 
-Widget listTile(Bloc bloc) 
-{
-  ProductApiProvider proApi = new ProductApiProvider();
-  return FutureBuilder(
-    future: proApi.productList(),
-    builder: (context, ssProduct) {
-    if (ssProduct.hasData) {
-        //  bloc.initiateProductList(ssProduct.data);
-    return ListView.builder(
-    itemCount: ssProduct.data.length,
-    itemBuilder: (context, index) {
-    return Container(height: 80.0,padding: EdgeInsets.only(top:15.0),child:Card(
-    margin: EdgeInsets.only(right: 10.0, left: 10.0),
-    elevation: 10.0,
-    child: ListTile(
-      title: Row(children: <Widget>[
-        Expanded(flex: 5,child:Text('Product:'),),
-        Expanded(flex: 5,child: Text(ssProduct.data[index].description.trim()),)
-      ],), 
-        onTap: (){
-              Navigator.push(context, MaterialPageRoute(
-              builder: (context) =>
-              Productpopup(loginInfo: widget.loginInfo,
-              prodCode: ssProduct.data[index].productCode,            
-              )));
-        },
-      trailing: IconButton(
-      icon: Icon(Icons.delete),
-      onPressed: ()async { 
-      ProductApiProvider proApi = new ProductApiProvider();
-      await (proApi.delProducts(ssProduct.data[index].productCode)).then((onValue)
-      {
-      if(onValue == true){ //StaticsVar.showAlert(context, ssProduct.data[index].productCode + ' Deleted');
-      Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductPage(loginInfo: widget.loginInfo,)));
-      }else {return  Exception('Loading Failed');} 
-      }
-         );
-        } ,  
-       ),
-    subtitle: Container(
-    child: Align(
-    alignment: Alignment.centerLeft,
-    child: Column(
-    children: <Widget>[
-       Row(
-        children: <Widget>[
-        Expanded(flex: 5,child:Text('Category:'),),
-          // SizedBox(width: 20,),
-            Expanded(flex: 5,child: Text(ssProduct.data[index].productCategory))
-        ],
-       ),
-      // Text('Category: ' + ssProduct.data[index].productCategory),
-                    ],
-                )),
-          )
+  Widget listTile(Bloc bloc) 
+  {
+    ProductApiProvider proApi = new ProductApiProvider();
+    return FutureBuilder(
+      future: proApi.productList(),
+      builder: (context, ssProduct) {
+      if (ssProduct.hasData) {
+          //  bloc.initiateProductList(ssProduct.data);
+      return ListView.builder(
+          itemCount: ssProduct.data.length,
+          itemBuilder: (context, index) {
+          return Container(height: 80.0,padding: EdgeInsets.only(top:15.0),child:Card(
+          margin: EdgeInsets.only(right: 10.0, left: 10.0),
+          elevation: 10.0,
+          child: ListTile(
+            title: Row(children: <Widget>[
+                Expanded(flex: 5,child:Text('Product:'),),
+                Expanded(flex: 5,child: Text(ssProduct.data[index].description.trim()),)
+              ],), 
+            onTap: (){
+                  Navigator.push(context, MaterialPageRoute(
+                  builder: (context) =>
+                  Productpopup(loginInfo: widget.loginInfo,
+                  prodCode: ssProduct.data[index].productCode,            
+                  )));},
+            trailing: IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: ()async { 
+                ProductApiProvider proApi = new ProductApiProvider();
+                await (proApi.delProducts(ssProduct.data[index].productCode)).then((onValue)
+                {
+                  if(onValue == true){ //StaticsVar.showAlert(context, ssProduct.data[index].productCode + ' Deleted');
+                    Navigator.push(context, MaterialPageRoute(builder: (context)=> ProductPage(loginInfo: widget.loginInfo,)));
+                    }else {return  Exception('Loading Failed');} 
+                });
+              },),
+            subtitle: Container(
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Column(
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                    Expanded(flex: 5,child:Text('Category:'),),
+                      // SizedBox(width: 20,),
+                        Expanded(flex: 5,child: Text(ssProduct.data[index].productCategory))
+                  ],),
+                  // Text('Category: ' + ssProduct.data[index].productCategory),
+                ],)
+              ),
+            )
           ),
-          
-    ) );
-  
+          ) );
+        });
+      } else {return Center(child: CircularProgressIndicator(),);}
+    });
   }
-  );
-  } else {return Center(child: CircularProgressIndicator(),);
-  }
-});
-}
 }
 

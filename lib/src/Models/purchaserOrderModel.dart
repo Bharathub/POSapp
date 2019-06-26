@@ -1,4 +1,4 @@
-class PurchaeOrderHD {
+class PurchaseOrderHD {
     String poNo;
     DateTime poDate;
     int branchId;
@@ -35,7 +35,7 @@ class PurchaeOrderHD {
     // dynamic currencyCodeList;
     // dynamic paymentTypeList;
 
-    PurchaeOrderHD({
+    PurchaseOrderHD({
         this.poNo,
         this.poDate,
         this.branchId,
@@ -73,7 +73,7 @@ class PurchaeOrderHD {
         // this.paymentTypeList,
     });
 
-    factory PurchaeOrderHD.fromJson(Map<String, dynamic> json) => new PurchaeOrderHD(
+    factory PurchaseOrderHD.fromJson(Map<String, dynamic> json) => new PurchaseOrderHD(
         poNo: json["PONo"],
         // poDate: json["PODate"],
         poDate: DateTime.parse(json["PODate"].toString()),        
@@ -158,8 +158,6 @@ class PurchaeOrderHD {
     };
 }
 
-
-
 class PurchaseOrderDetails 
 {
     String poNo;
@@ -173,6 +171,7 @@ class PurchaseOrderDetails
     String modifiedBy;
     DateTime modifiedOn;
     String currencyCode;
+    bool status;
     String currencyDescription;
 
     PurchaseOrderDetails({
@@ -187,6 +186,7 @@ class PurchaseOrderDetails
         this.modifiedBy,
         this.modifiedOn,
         this.currencyCode,
+        this.status,
         this.currencyDescription,
     });
 
@@ -203,6 +203,7 @@ class PurchaseOrderDetails
         modifiedBy: json["ModifiedBy"],
         modifiedOn: DateTime.parse(json["ModifiedOn"]),
         currencyCode: json["CurrencyCode"],
+        status: json["Status"],
         currencyDescription: json["CurrencyDescription"],
     );
     }
@@ -219,6 +220,7 @@ class PurchaseOrderDetails
         "ModifiedBy": modifiedBy,
         "ModifiedOn": modifiedOn.toString(),
         "CurrencyCode": currencyCode,
+        "Status": status,
         "CurrencyDescription": currencyDescription,
     };
 }

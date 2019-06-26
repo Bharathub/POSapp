@@ -44,9 +44,10 @@ class _CustomertariffState extends State<CustomertariffQuotation>
     //  { 
     intCount = intCount+1; print('No Of Times Executed: ' + intCount.toString()); 
       if(intCount==1) 
-      { bloc.initiateProducts(); 
-        bloc.initiateCurrencys(); 
-        bloc.initiateCustomers();
+      { bloc.initiateProducts(true); 
+        bloc.initiateCurrencys(true); 
+        bloc.initiateCustomers(true);
+        bloc.validateProductDuplicate(context);
         bloc.fetchQuotation(widget.quotNo);}
       //  }
     return MaterialApp(
@@ -61,10 +62,10 @@ class _CustomertariffState extends State<CustomertariffQuotation>
             ),
           ),
           body: SingleChildScrollView(
-            child: Center(
+            child: Center( 
               child: Column(
                 children: <Widget>[
-                  SizedBox(height: 50.0),
+                qCusNotxtFld(bloc),
                 customerDD(bloc, !isInEditMode, widget.customers), //, widget.quotNo, key, customers),
                 cusEffecDate(bloc,isInEditMode),
                 cusExpiryDate(bloc),
@@ -74,7 +75,7 @@ class _CustomertariffState extends State<CustomertariffQuotation>
                    Text("Product List",style: TextStyle(fontSize: 24.0),),
                    addBtn(context, bloc)
                 ],),
-                Container( height: 380.0,child: listTile(bloc),),
+               Container( height: 320.0,child: listTile(bloc),),
                 // saveBtn(context,bloc, widget.loginInfo, widget.quotNo),
               ],
             ),
@@ -98,7 +99,7 @@ class _CustomertariffState extends State<CustomertariffQuotation>
     return FlatButton(
       color: Colors.red,
       child: Text('Add',style:TextStyle(color: Colors.white)),
-      onPressed: () {_showDialog(context, bloc);},
+      onPressed: () {  bloc.clearDisplay4EditQuotItem();  _showDialog(context, bloc);},
     );
   }
 
@@ -159,7 +160,7 @@ class _CustomertariffState extends State<CustomertariffQuotation>
   dispProductDetails(BuildContext context, Bloc bloc,)
   {
     return  SingleChildScrollView(
-      child: Container(margin: EdgeInsets.only(top: 120.0, left: 10.0, right: 10.0),
+      child: Container(margin: EdgeInsets.all(10.0),
               child: Center(
                 child: Column(
                 children: <Widget>[
@@ -177,14 +178,12 @@ class _CustomertariffState extends State<CustomertariffQuotation>
 
 
   productdownValue(Bloc bloc)
-   {
-     //ProductApiProvider wlApi = new ProductApiProvider();
-     bloc.initiateProducts(); 
+   {    
+     bloc.initiateProducts(false); 
      return StreamBuilder<String>(
       stream: bloc.qCusProdCodePU,
       builder: (context,snapshot)
-      {
-      
+      {      
       return StreamBuilder(
         stream: bloc.initProducts,
         builder: (context,ssWLDD)
@@ -200,7 +199,7 @@ class _CustomertariffState extends State<CustomertariffQuotation>
                 .map<DropdownMenuItem<String>>(
                 (Product dropDownStringitem){ 
                   return DropdownMenuItem<String>(
-                    value: dropDownStringitem.productCode.toString(), 
+                    value: dropDownStringitem.productCode.trim(), 
                     child: Text(dropDownStringitem.description),);},).toList(),
                     value: snapshot.data,
                     onChanged: bloc.qCusProdCodePUChanged,
@@ -215,7 +214,7 @@ class _CustomertariffState extends State<CustomertariffQuotation>
 
 stdQtnpopupPaymentTerm(Bloc bloc)
 {
-   bloc.initiateCurrencys(); 
+   bloc.initiateCurrencys(false); 
   return StreamBuilder<String>(
     stream: bloc.qCusPaymentPU,
     builder: (context,snapshot)
@@ -315,10 +314,10 @@ void _showDialog(BuildContext context, Bloc bloc) {
   }
 
   Widget showPopUpList(BuildContext contxt, Bloc bloc) {
-    return Container( width: 250, height: 400, 
+    return Container( width: 250, height: 275, 
         // decoration: BoxDecoration(border: Border.all(color: Colors.blueGrey), 
         //               shape: BoxShape.rectangle, borderRadius: BorderRadius.circular(5.0)),
-        padding: EdgeInsets.only(left:10.00, right:5.00),
+        padding: EdgeInsets.all(10.0),
         //elevation: 24,
         child:
         Column(
@@ -376,9 +375,29 @@ void _showDialog(BuildContext context, Bloc bloc) {
   }
 
 
+  qCusNotxtFld(Bloc bloc)
+  {
+    TextEditingController _controller = new TextEditingController();
+    return StreamBuilder(
+          stream: bloc.qCusNoCode,
+          builder:(context,snapshot){
+          if(snapshot.hasData)
+          {_controller.value = _controller.value.copyWith(text: snapshot.data.toString());}
+          return SizedBox(width: 300.0,
+            child: TextField(
+              onChanged: bloc.qCusNoCodeChanged,
+              controller: _controller, 
+              enabled: false,
+              decoration: InputDecoration(labelText: 'Quotation No.'),
+            ) );});
+  }
+
+
+
+
   customerDD(Bloc bloc,bool isInEditMode, List<Customer> customers) //, String quotNo, Key key, List<Customer> customers)
   {
-    //CustomerApiProvider payApi = new CustomerApiProvider();
+    bloc.initiateCustomers(false);
     return StreamBuilder<String>(
       stream: bloc.qCusCCode,
       builder: (context,snapshot)
@@ -448,7 +467,7 @@ void _showDialog(BuildContext context, Bloc bloc) {
   cusEffecDate(Bloc bloc,bool isInEditMode)
   {
     TextEditingController _controller = new TextEditingController();
-    final formats = { InputType.date: DateFormat('dd/MM/yyyy'),};
+    final formats = { InputType.date: DateFormat('dd/MM/yyyy')};
     InputType inputType = InputType.date;
     bloc.initDateCust(isInEditMode);
     return StreamBuilder<DateTime>( 
@@ -517,7 +536,9 @@ saveBtn(BuildContext context, Bloc bloc, Users loginInfo, String quotNo)
         .then((isSuccess) { if(isSuccess) 
           { StaticsVar.showAlert(context,'Customer Quotation Saved'); 
             bloc.clearQuotationHD();
-            Navigator.push(context, MaterialPageRoute(builder: (context)=> QuotationTab(loginInfo: loginInfo,tabIndexno:1))); }},
+            Navigator.push(context, 
+              MaterialPageRoute(builder: (context)=> 
+                QuotationTab(loginInfo: loginInfo,tabIndexno:1))); }},
           onError: (e) {StaticsVar.showAlert(context, e.toString());} )
         .catchError((onError) {StaticsVar.showAlert(context, onError.toString());});    
       },
@@ -527,8 +548,7 @@ saveBtn(BuildContext context, Bloc bloc, Users loginInfo, String quotNo)
 
 
 Widget listTile(Bloc bloc)
-{
-   
+{   
   return StreamBuilder(
     stream: bloc.quotationItems,
     builder: (context, ssPOproDt) {
@@ -537,7 +557,7 @@ Widget listTile(Bloc bloc)
       return ListView.builder(
           itemCount: poData.length,
           itemBuilder: (context, index) 
-          { return Container(height: 80.0,padding: EdgeInsets.only(top:15.0),
+          { return poData[index].status ? Container(height: 90.0,padding: EdgeInsets.only(top:15.0),
               child: Card(
                 margin: EdgeInsets.only(right: 5.0, left: 5.0),
                 elevation: 10.0,
@@ -551,7 +571,7 @@ Widget listTile(Bloc bloc)
                   trailing: Row(mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       IconButton( icon: Icon(Icons.edit),
-                      onPressed:(){bloc.display4EditQuotaionItem(poData[index].productCode);
+                      onPressed:(){bloc.display4EditQuotaionItem(poData[index].productCode,poData);
                        _showDialog(context, bloc);}),
                     IconButton( icon: Icon(Icons.delete), onPressed:(){ bloc.deleteQuotaionItem(poData[index].productCode);
                       StaticsVar.showAlert(context, "Product Deleted"); } ),
@@ -580,7 +600,8 @@ Widget listTile(Bloc bloc)
                       ],
                     )),
                   )),
-              )); 
+                ) 
+              ) : Container(); 
         });
     //} else { return Center(child:CircularProgressIndicator());}
   });

@@ -75,6 +75,21 @@ class ProductApiProvider
     }else {throw Exception('Failed to Edit');}
   }
 
+
+    Future<Product> getProductDetail(String supplierCode, String productCode) async
+    {
+      Product prductDetail;  
+      String root = StaticsVar.root;
+      String url = '$root/api/operation/purchaseorder/getproductsupplierprice/$supplierCode/$productCode';
+      var future = client.get(url,headers:{"Accept": "application/json","content-type": "application/json"});
+      final response = await future;
+      if(response.statusCode==200){
+        var grVal = json.decode(response.body);
+        prductDetail = Product.fromJson(grVal);
+        return prductDetail;
+      } else {throw Exception('Failed to Retrive Product Detail');}
+   }
+
   // // Returns particular objects
 
   //  Future<List<Lookup>> lookupObj() async{
